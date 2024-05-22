@@ -1,0 +1,6 @@
+@PearlBookstore.API_HostAddress = http://localhost:5119
+
+GET {{PearlBookstore.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
