@@ -6,6 +6,12 @@ services:
     build:
       context: .
       dockerfile: PearlBookstore.API/Dockerfile
+    ports:
+      - "10110:8080"
+      - "10111:8081" 
+    depends_on:
+      db:
+        condition: service_started
   db: 
     image: mysql
     command: ["mysqld", "--mysql-native-password=ON"]
@@ -16,6 +22,19 @@ services:
       - '3307:3306'
     volumes:
      - mysql_data:/var/lib/mysql
+  pearlbookstore.web:
+   image: ${DOCKER_REGISTRY-}pearlbookstoreweb
+   build:
+     context: .
+     dockerfile: PearlBookstore.WEB/PearlBookstore.WEB/Dockerfile
+   ports:
+    - "20220:8080"
+    - "20221:8081" 
+   depends_on:
+     pearlbookstore.api:
+       condition: service_started
+     db:
+       condition: service_started
 volumes:
   mysql_data:
   
