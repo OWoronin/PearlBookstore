@@ -3,8 +3,13 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "pearlbookstore.web",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}",
       "serviceActions": {
-        "pearlbookstore.api": "StartDebugging"
+        "pearlbookstore.api": "StartDebugging",
+        "pearlbookstore.web": "StartDebugging",
+        "db": "StartWithoutDebugging"
       }
     }
   }
