@@ -1,4 +1,4 @@
-### 📚 Integrated Informatics System for Bookstore Management
+### 📚 Integrated Management Information System for Bookstore
 
 Project Overview
 
