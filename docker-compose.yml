@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  pearlbookstore.api:
+    image: ${DOCKER_REGISTRY-}pearlbookstoreapi
+    build:
+      context: .
+      dockerfile: PearlBookstore.API/Dockerfile
+  db: 
+    image: mysql
+    command: ["mysqld", "--mysql-native-password=ON"]
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+    ports:
+      - '3307:3306'
+    volumes:
+     - mysql_data:/var/lib/mysql
+volumes:
+  mysql_data:
+  
+
