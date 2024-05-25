@@ -9,7 +9,8 @@ namespace PearlBookstore.API.Models
 		public string Login { get; set; }
 		public string Name { get; set; }	
 		public string Surname { get; set; }
-		public int Role { get; set; }
+		public int RoleId { get; set; }
+		public Role Role { get; set; } = null!;
 
 		
 	}

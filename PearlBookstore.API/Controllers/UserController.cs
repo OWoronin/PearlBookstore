@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PearlBookstore.API.DB;
 using PearlBookstore.Shared;
 
 namespace PearlBookstore.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(AppDbContext context) : ControllerBase
     {
 
         [HttpPost("Login")]
         public async Task<LoginResponse> UserLogin(LoginData data)
         {
-            //TO DO Create connection to DB, data validation, roles conditions
+            //TO DO  data validation, roles conditions
             LoginResponse login = new LoginResponse()
             {
                 Id = 1,

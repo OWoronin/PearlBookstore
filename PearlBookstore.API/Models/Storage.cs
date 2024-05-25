@@ -6,7 +6,9 @@ namespace PearlBookstore.API.Models
 	{
 		[Key]
 		public int Id { get; set; }	//needed in library 
-		public int ItemId { get; set; }	
+		public ICollection<Item> Items { get;} = new List<Item>();
 		public int Count { get; set; }
+
+
 	}
 }
