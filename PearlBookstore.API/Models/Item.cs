@@ -1,9 +1,12 @@
-﻿namespace PearlBookstore.API.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PearlBookstore.API.Models
 {
 	public class Item
 	{
 
 		//TO DO connect Item table with genre table, available in storage class
+		[Key]
 		public int Id { get; set; }
 		public string Title { get; set; }
 		public string Description { get; set; }
