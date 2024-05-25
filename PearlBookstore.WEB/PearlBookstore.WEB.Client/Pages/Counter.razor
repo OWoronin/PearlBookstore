@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@inject IHttpClientFactory clientFactory
 @rendermode InteractiveAuto
 
 <PageTitle>Counter</PageTitle>
@@ -15,5 +16,24 @@
     private void IncrementCount()
     {
         currentCount++;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoginData login = new()
+            {
+                Login = "TestLogin",
+                Password = "Password"
+            };
+        var httpClient = clientFactory.CreateClient("Anonymous");
+        var someData = await httpClient.PostAsJsonAsync<LoginData>("api/user/Login", login);
+        if (someData != null)
+        {
+            var response = await someData.Content.ReadFromJsonAsync<LoginResponse>();
+            if(response != null)
+            {
+                Console.WriteLine($"{response.Login}, {response.Id}, {response.RoleId}");
+            }
+        }
     }
 }

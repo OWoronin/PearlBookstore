@@ -12,6 +12,9 @@ services:
     depends_on:
       db:
         condition: service_started
+    expose:
+      - "8080"
+      - "8081" 
   db: 
     image: mysql
     command: ["mysqld", "--mysql-native-password=ON"]
@@ -23,18 +26,20 @@ services:
     volumes:
      - mysql_data:/var/lib/mysql
   pearlbookstore.web:
-   image: ${DOCKER_REGISTRY-}pearlbookstoreweb
-   build:
-     context: .
-     dockerfile: PearlBookstore.WEB/PearlBookstore.WEB/Dockerfile
-   ports:
-    - "20220:8080"
-    - "20221:8081" 
-   depends_on:
-     pearlbookstore.api:
-       condition: service_started
-     db:
-       condition: service_started
+    image: ${DOCKER_REGISTRY-}pearlbookstoreweb
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    build:
+      context: .
+      dockerfile: PearlBookstore.WEB/PearlBookstore.WEB/Dockerfile
+    ports:
+      - "20220:8080"
+      - "20221:8081" 
+    depends_on:
+      pearlbookstore.api:
+        condition: service_started
+      db:
+        condition: service_started
 volumes:
   mysql_data:
   
