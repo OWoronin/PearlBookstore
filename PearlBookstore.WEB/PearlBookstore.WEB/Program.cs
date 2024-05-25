@@ -8,6 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddHttpClient("Anonymous", client => client.BaseAddress = new Uri("http://pearlbookstore.api:8080/"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
