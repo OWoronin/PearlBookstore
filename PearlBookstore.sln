@@ -5,11 +5,11 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PearlBookstore.API", "PearlBookstore.API\PearlBookstore.API.csproj", "{F4B822A2-D743-4D1B-A2B5-5CD854C6D280}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PearlBookstore.WEB", "PearlBookstore.WEB\PearlBookstore.WEB\PearlBookstore.WEB.csproj", "{3F7D2B5B-9755-435C-8AE0-FC40F3505B83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PearlBookstore.WEB", "PearlBookstore.WEB\PearlBookstore.WEB\PearlBookstore.WEB.csproj", "{3F7D2B5B-9755-435C-8AE0-FC40F3505B83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PearlBookstore.WEB.Client", "PearlBookstore.WEB\PearlBookstore.WEB.Client\PearlBookstore.WEB.Client.csproj", "{E8DFD267-76D7-4817-AA0A-18DE6C05D08A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PearlBookstore.WEB.Client", "PearlBookstore.WEB\PearlBookstore.WEB.Client\PearlBookstore.WEB.Client.csproj", "{E8DFD267-76D7-4817-AA0A-18DE6C05D08A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PearlBookstore.Shared", "PearlBookstore.Shared\PearlBookstore.Shared.csproj", "{A72E8413-62A7-4A7F-A9CD-0DDE19749E09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PearlBookstore.Shared", "PearlBookstore.Shared\PearlBookstore.Shared.csproj", "{A72E8413-62A7-4A7F-A9CD-0DDE19749E09}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{4E28302B-F177-4955-9C71-CAC04E6E2289}"
 EndProject
