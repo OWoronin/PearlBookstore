@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
+using PearlBookstore.API.Services;
+using System.Threading.Tasks.Dataflow;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySql(connection, ServerVersion.AutoDetect(connection));
 });
+
+builder.Services.AddSingleton<Bucket>();//koszyk ciagle w pamieci
 
 var app = builder.Build();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
+using PearlBookstore.API.Models;
 using PearlBookstore.Shared;
 
 namespace PearlBookstore.API.Controllers
@@ -9,30 +10,6 @@ namespace PearlBookstore.API.Controllers
     [Route("api/[controller]")]
     public class UserController(AppDbContext context) : ControllerBase
     {
-
-        [HttpGet]
-        public async Task<UserDto> Test()
-        {
-
-            var user = await context.Users
-                            .Include(u => u.Role)
-                            .FirstOrDefaultAsync();
-
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Login = user.Login,
-                Name = user.Name,
-                Surname = user.Surname,
-                Role = new RoleDto()
-                {
-                    Id = user.Role.Id,
-                    Name = user.Role.Name,
-                }
-            };
-
-            return await Task.FromResult(userDto);
-        }
 
         [HttpPost("Login")]
         public async Task<LoginResponse> UserLogin(LoginData data)
@@ -57,20 +34,43 @@ namespace PearlBookstore.API.Controllers
         [HttpPost("Registration")]
         public async Task<RegistrationResponse> UserRegistration(RegistrationData data)
         {
-            //TO  DO connection to DB, data validation
 
-            //User user = new User()
-            //{
-            //    Name = data.Name,
-            //    Login = data.Login,
-            //    Surname = data.Surname,
-            //}
+            var user = await context.Users.Where(u => u.Login == data.Login).FirstOrDefaultAsync();
 
-            RegistrationResponse registrationResponse = new RegistrationResponse()
+            var registrationResponse = new RegistrationResponse();
+
+            if (user == null)
             {
-                Success = true,
-            };
+                var newUser = new User(); 
+                newUser.Name = data.Name;
+                newUser.Surname = data.Surname;
+                newUser.Login = data.Login;
+                newUser.Password = data.Password;
+                newUser.RoleId = data.Role;
 
+                context.Users.Add(newUser);
+
+                int added = context.SaveChanges();
+                if (added == 0)
+                {
+                    registrationResponse.Message = "Rejestracja pracownika nie powiodła się. Skontaktuj się z administratorem.";
+                    registrationResponse.Success = false;
+                }
+                else
+                {
+                    registrationResponse.Message = "Rejestracja pracownika zakończona sukcesem.";
+                    registrationResponse.Success = true;
+                }
+
+               
+            }
+            else
+            {
+                registrationResponse.Success = false;
+                registrationResponse.Message = "Ten login jest zajęty!";
+            }
+
+           
 
             return await Task.FromResult(registrationResponse);
         }
