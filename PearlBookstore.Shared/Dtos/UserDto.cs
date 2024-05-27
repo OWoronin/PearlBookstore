@@ -1,4 +1,6 @@
-﻿namespace PearlBookstore.Shared
+﻿using PearlBookstore.Shared.Dtos;
+
+namespace PearlBookstore.Shared
 {
     public class UserDto
     {

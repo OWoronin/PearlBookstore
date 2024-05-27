@@ -51,7 +51,7 @@ namespace PearlBookstore.API.DB
                 new Genre() { Id = 21, Name = "Fikcja" },
                 new Genre() { Id = 22, Name = "Tragedia" },
                 new Genre() { Id = 23, Name = "Polska literatura" },
-                new Genre() { Id = 24, Name = "Samobójstwo" },
+                new Genre() { Id = 24, Name = "Album" },
                 new Genre() { Id = 25, Name = "Historia" },
                 new Genre() { Id = 26, Name = "Literatura" }
                 );

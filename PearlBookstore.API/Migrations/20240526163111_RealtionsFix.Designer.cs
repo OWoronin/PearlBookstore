@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PearlBookstore.API.DB;
 
@@ -10,9 +11,11 @@ using PearlBookstore.API.DB;
 namespace PearlBookstore.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240526163111_RealtionsFix")]
+    partial class RealtionsFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -779,7 +782,7 @@ namespace PearlBookstore.API.Migrations
                         new
                         {
                             Id = 24,
-                            Name = "Album"
+                            Name = "Samobójstwo"
                         },
                         new
                         {
@@ -9911,7 +9914,7 @@ namespace PearlBookstore.API.Migrations
                         .IsRequired();
 
                     b.HasOne("PearlBookstore.API.Models.Item", "Item")
-                        .WithMany("Genres")
+                        .WithMany("Genre")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -9924,7 +9927,7 @@ namespace PearlBookstore.API.Migrations
             modelBuilder.Entity("PearlBookstore.API.Models.ItemType", b =>
                 {
                     b.HasOne("PearlBookstore.API.Models.Item", "Item")
-                        .WithMany("Types")
+                        .WithMany("Type")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -9963,9 +9966,9 @@ namespace PearlBookstore.API.Migrations
 
             modelBuilder.Entity("PearlBookstore.API.Models.Item", b =>
                 {
-                    b.Navigation("Genres");
+                    b.Navigation("Genre");
 
-                    b.Navigation("Types");
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("PearlBookstore.API.Models.Role", b =>

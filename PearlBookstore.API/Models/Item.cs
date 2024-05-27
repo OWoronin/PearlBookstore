@@ -16,14 +16,15 @@ namespace PearlBookstore.API.Models
         public int Counter { get; set; }
 
         //
+
         public int AuthorId { get; set; }
         public Author Author { get; set; } = null!;
 
         //
 
-        public ICollection<Genre> Genre { get; } = new List<Genre>();
+        public ICollection<ItemGenre> Genres { get; } = new List<ItemGenre>();
 
-        public ICollection<Type> Type { get; } = new List<Type>();
+        public ICollection<ItemType> Types { get; } = new List<ItemType>();
 
 
     }
