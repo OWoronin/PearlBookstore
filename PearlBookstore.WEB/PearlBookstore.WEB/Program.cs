@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using MudBlazor;
+using MudBlazor.Services;
 using PearlBookstore.WEB.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,19 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddHttpClient("Anonymous", client => client.BaseAddress = new Uri("http://pearlbookstore.api:8080/"));
+
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopEnd;
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.NewestOnTop = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 2500;
+    config.SnackbarConfiguration.HideTransitionDuration = 500;
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

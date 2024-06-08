@@ -1,9 +1,9 @@
 ﻿using PearlBookstore.API.Models;
-using PearlBookstore.Shared;
+using PearlBookstore.Shared.RequestsResponses;
 
 namespace PearlBookstore.API.Services
 {
-	public class Bucket
+    public class Bucket
 	{
 		public List<AddItemToBucketRequest> Items { get; } = new List<AddItemToBucketRequest>();
 	

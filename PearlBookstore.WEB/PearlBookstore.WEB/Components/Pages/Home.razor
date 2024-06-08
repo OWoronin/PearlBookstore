@@ -2,32 +2,56 @@
 @inject IHttpClientFactory clientFactory
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+<MudGrid>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Strona główna</MudText>
+    </MudItem>
+    <MudItem xs="2"></MudItem>
+    <MudItem xs="8">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="m-3">
+            Regulamin księgarni
+        </MudText>
+        <MudText Align="Align.Justify" Class="m-2">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pharetra porta massa elementum bibendum. Donec commodo tincidunt tempor. Aliquam sit amet dolor quis nisl tempor congue. Ut quis magna vitae diam pulvinar euismod sed id ligula. Nam hendrerit faucibus mi, sit amet commodo neque euismod et. Vestibulum posuere egestas sem, at molestie ante porttitor id. Quisque blandit convallis enim sit amet volutpat. Nullam iaculis mollis laoreet. Nulla finibus lectus vitae tellus tincidunt pharetra.
+        </MudText>
+        <MudText Align="Align.Justify" Class="m-2">
+            Donec id rutrum est, posuere venenatis tortor. Morbi in risus turpis. Proin auctor nibh non arcu euismod scelerisque. Vivamus velit erat, iaculis tincidunt sollicitudin non, maximus non ligula. Donec tristique nibh maximus, luctus nisl sed, iaculis nibh. Morbi ornare pretium magna vitae molestie. Maecenas ipsum augue, cursus sed mollis non, mollis vel dolor. Nunc iaculis fringilla lorem ac aliquet. Nam euismod lorem sit amet ipsum laoreet, vel aliquet nisl convallis. Suspendisse feugiat efficitur libero in lacinia. Nunc posuere, urna sit amet tristique varius, ante augue sagittis purus, nec faucibus tellus leo nec mauris. Fusce nec risus nec nibh fringilla consectetur non in risus. Nullam egestas varius lobortis. Cras elementum sapien sit amet dui egestas, a pharetra lacus fermentum.
+        </MudText>
+        <MudText Align="Align.Justify" Class="m-2">
+            Praesent interdum leo nec nisl facilisis, bibendum maximus justo rhoncus. Nullam ultricies mi id libero elementum placerat. Nulla sollicitudin tellus nulla. Praesent posuere elit nec erat tincidunt dignissim. Morbi vestibulum massa vitae leo iaculis, ultricies dictum urna gravida. Suspendisse ut est euismod, fringilla libero vel, pharetra nisl. Pellentesque at ante justo. Mauris non mi ut enim efficitur eleifend id quis nunc. Proin vel nibh lectus. Etiam hendrerit lorem nunc, nec dapibus ex posuere id. Maecenas ut finibus ligula. Aliquam nisi ligula, vestibulum nec scelerisque eget, consequat sit amet nulla. Integer congue velit eget arcu accumsan semper. Nunc sed volutpat ante. Praesent vitae velit finibus, eleifend orci ut, commodo libero.
+        </MudText>
+        <MudText Align="Align.Justify" Class="m-2">
+            In eget leo feugiat, condimentum libero quis, suscipit diam. Vestibulum nec ipsum vel enim imperdiet ullamcorper. Nam eget molestie nulla. Donec semper et eros in luctus. Aliquam ut posuere purus. Nunc condimentum sollicitudin sagittis. In luctus in lorem sit amet vehicula. In eu aliquam purus. Nullam euismod dui volutpat ante feugiat dictum. Etiam hendrerit, magna sed molestie dapibus, elit ligula vestibulum leo, ac pretium nibh nisl gravida mauris. Ut ante diam, tincidunt ac mi eu, semper viverra lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce scelerisque laoreet purus at tincidunt.
+        </MudText>
+        <MudText Align="Align.Justify" Class="m-2">
+            In facilisis ac nisi nec eleifend. Donec non ligula non diam fringilla facilisis. Nulla posuere leo at erat fermentum efficitur. Mauris at lacus consequat, venenatis ipsum id, aliquam quam. Sed at felis enim. Donec efficitur odio non augue volutpat, nec sodales urna tempor. Fusce suscipit turpis eu enim convallis pellentesque. Nunc eget erat interdum, luctus massa quis, dignissim eros. Donec eget laoreet velit. Suspendisse nec libero in est semper convallis.
+        </MudText>
+    </MudItem>
+    <MudItem xs="2"></MudItem>
+</MudGrid>
 
 @code
 {
-    protected override async Task OnInitializedAsync()
-    {
-        RegistrationData register = new()
-            {
-                Login = "Login",
-                Name = "Adam",
-                Password = "password",
-                Role = 1,
-                Surname = "Kot"
-            };
-        var httpClient = clientFactory.CreateClient("Anonymous");
-        var data = await httpClient.PostAsJsonAsync<RegistrationData>("api/user/Registration", register);
-        if (data != null)
-        {
-            var response = await data.Content.ReadFromJsonAsync<RegistrationResponse>();
-            if (response != null)
-            {
-                Console.WriteLine($"{response.Success}");
-            }
-        }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     RegistrationData register = new()
+    //         {
+    //             Login = "Login",
+    //             Name = "Adam",
+    //             Password = "password",
+    //             Role = 1,
+    //             Surname = "Kot"
+    //         };
+    //     var httpClient = clientFactory.CreateClient("Anonymous");
+    //     var data = await httpClient.PostAsJsonAsync<RegistrationData>("api/user/Registration", register);
+    //     if (data != null)
+    //     {
+    //         var response = await data.Content.ReadFromJsonAsync<RegistrationResponse>();
+    //         if (response != null)
+    //         {
+    //             Console.WriteLine($"{response.Success}");
+    //         }
+    //     }
 
-    }
+    // }
 }

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
 using PearlBookstore.API.Models;
-using PearlBookstore.Shared;
+using PearlBookstore.Shared.RequestsResponses;
 
 namespace PearlBookstore.API.Controllers
 {

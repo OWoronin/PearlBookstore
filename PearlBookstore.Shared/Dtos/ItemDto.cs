@@ -13,6 +13,6 @@
 
         public List<GenreDto> GenresDtos { get; set; }
 
-        public List<TypeDto> TypesDtos { get; set; }
+        public TypeDto TypeDto { get; set; }
     }
 }

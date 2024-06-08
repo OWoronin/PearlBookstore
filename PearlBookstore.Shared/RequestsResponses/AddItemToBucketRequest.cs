@@ -1,4 +1,4 @@
-﻿namespace PearlBookstore.Shared
+﻿namespace PearlBookstore.Shared.RequestsResponses
 {
     public class AddItemToBucketRequest
     {
