@@ -58,26 +58,26 @@ namespace PearlBookstore.API.Controllers
 
         }
 
-        [HttpGet("Accept")]
-        public async Task<bool> Accept()
-        {
-            for (int i = 0; i < bucket.Items.Count; i++)
-            {
-                var item = context.Items.Where(it => it.Id == bucket.Items[i].ItemId).FirstOrDefault();
-                item.Counter--;
-
-            }
-
-            if (context.SaveChanges() == bucket.Items.Count)
-            {
-                bucket.Items.Clear();
-                return await Task.FromResult(true);
-            }
-            else
-            {
-                return await Task.FromResult(false);
-            }
-
+		[HttpGet("Accept")]
+		public async Task<bool> Accept()
+		{
+			for (int i = 0; i < bucket.Items.Count; i++)
+			{
+				var item = context.Items.Where(it => it.Id == bucket.Items[i].ItemId).FirstOrDefault();
+				item.Counter--; 
+				
+			}
+			
+			if(context.SaveChanges() == bucket.Items.Count)
+			{
+				bucket.Items.Clear();
+				return await Task.FromResult(true);
+			}
+			else
+			{
+				return await Task.FromResult(false);
+			}
+			//to do zapisz do db
 
 
         }
