@@ -25,7 +25,7 @@ namespace PearlBookstore.API.Controllers
             return await Task.FromResult(true);
         }
 
-        [HttpPost("RemoveItemFromBucket")]
+        [HttpPost("RemoveItemFromBucket/{ItemId}")]
         public async Task<bool> RemoveItemFromBucket(int ItemId)
         {
             var item = context.Items.Where(i => i.Id == ItemId).FirstOrDefault();
@@ -58,28 +58,25 @@ namespace PearlBookstore.API.Controllers
 
         }
 
-		[HttpGet("Accept")]
-		public async Task<bool> Accept()
-		{
-			for (int i = 0; i < bucket.Items.Count; i++)
-			{
-				var item = context.Items.Where(it => it.Id == bucket.Items[i].ItemId).FirstOrDefault();
-				item.Counter--; 
-				
-			}
-			
-			if(context.SaveChanges() == bucket.Items.Count)
-			{
-				bucket.Items.Clear();
-				return await Task.FromResult(true);
-			}
-			else
-			{
-				return await Task.FromResult(false);
-			}
-			//to do zapisz do db
+        [HttpGet("Accept")]
+        public async Task<bool> Accept()
+        {
+            for (int i = 0; i < bucket.Items.Count; i++)
+            {
+                var item = context.Items.Where(it => it.Id == bucket.Items[i].ItemId).FirstOrDefault();
+                item.Counter--;
 
+            }
 
+            if (context.SaveChanges() == bucket.Items.Count)
+            {
+                bucket.Items.Clear();
+                return await Task.FromResult(true);
+            }
+            else
+            {
+                return await Task.FromResult(false);
+            }
         }
 
     }

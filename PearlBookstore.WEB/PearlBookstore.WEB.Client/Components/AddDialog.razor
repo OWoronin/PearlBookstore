@@ -1,0 +1,35 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText>Tytuł: @Model.Title</MudText>
+        <MudText>Typ: @Model.Type</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Add" Variant="Variant.Filled">Dodaj</MudButton>
+        <MudButton Color="Color.Success" OnClick="AddAndSummary" Variant="Variant.Filled">Dodaj i przejdź do podsumowania</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    [Parameter] public DialogModel Model { get; set; }
+
+    AddDialogReturnModel ReturnModel;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ReturnModel = new(Model);
+    }
+
+    private void Add()
+    {
+        ReturnModel.ChangeTab = false;
+        Dialog.Close(DialogResult.Ok(ReturnModel));
+    }
+
+    private void AddAndSummary()
+    {
+        ReturnModel.ChangeTab = true;
+        Dialog.Close(DialogResult.Ok(ReturnModel));
+    }
+}

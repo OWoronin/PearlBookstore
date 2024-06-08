@@ -17,10 +17,10 @@
                 </MudPaper>
             </MudItem>
             <MudItem xs="7">
-                <MudTextField Clearable="true" @bind-Value="@Value" AutoFocus="true" Placeholder="Tytuł lub Autor" />
+                <MudTextField Clearable="true" @bind-Value="@SearchValue" AutoFocus="true" Placeholder="Tytuł lub Autor" />
             </MudItem>
             <MudItem xs="3" Style="display:flex;justify-content:center">
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Success" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Search" Class="m-3">Wyszukaj publikacje</MudButton>
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Search" Class="m-3" OnClick="Search">Wyszukaj publikacje</MudButton>
             </MudItem>
             <MudItem xs="2">
                 <MudPaper Class="pa-4">
@@ -48,17 +48,17 @@
                                 }
                             </MudSelect>
                             <MudDivider />
-                            <MudSlider @bind-Value="PriceValueMin" Min="20" Max="250">Cena minimalna: @PriceValueMin.ToString() zł</MudSlider>
+                            <MudNumericField @bind-Value="PriceValueMin" Label="Cena mininalna" Min="0" Max="1000" Format="F1"/>
                             <MudDivider />
-                            <MudSlider @bind-Value="PriceValueMax" Min="20" Max="250">Cena maksymalna: @PriceValueMax.ToString() zł</MudSlider>
+                            <MudNumericField @bind-Value="PriceValueMax" Label="Cena maksymalna" Min="0" Max="1000" Format="F1" />
                             <MudDivider />
-                            <MudCheckBox Value="@Hard" Label="Twarda okładka" />
+                            <MudCheckBox @bind-Value="@Hard" Label="Twarda okładka" />
                             <MudDivider />
-                            <MudCheckBox Value="@Soft" Label="Miękka okładka" />
+                            <MudCheckBox @bind-Value="@Soft" Label="Miękka okładka" />
                             <MudDivider />
-                            <MudCheckBox Value="@Ebook" Label="Ebook" />
+                            <MudCheckBox @bind-Value="@Ebook" Label="Ebook" />
                             <MudDivider />
-                            <MudCheckBox Value="@AudioBook" Label="Audiobook" />
+                            <MudCheckBox @bind-Value="@AudioBook" Label="Audiobook" />
                         </MudCollapse>
                     </MudStack>
                 </MudPaper>
@@ -66,6 +66,13 @@
             @*////////////////////////////////////////////////////////////////////////////////////////////////////*@
             <MudItem xs="10">
                 <MudTable Items="@items" Bordered="true" SortLabel="SortBy" Height="50vh" FixedHeader="true">
+                    <ColGroup>
+                        <col style="width:20%"/>
+                        <col style="width:20%"/>
+                        <col style="width:20%"/>
+                        <col style="width:20%"/>
+                        <col style="width:20%"/>
+                    </ColGroup>
                     <HeaderContent>
                         <MudTh>Tytuł</MudTh>
                         <MudTh>Autor</MudTh>
@@ -77,9 +84,9 @@
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
-                        <MudTd DataLabel="Cena">@context.Price zł</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Dodaj do zakup" Style="display:flex;justify-content:center;">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" Disabled="context.Counter==0">
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})"  Disabled="context.Counter==0">
                                 @if (context.Counter == 0)
                                 {
                                     @("Niedostępny")
@@ -105,7 +112,14 @@
     <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
         <MudGrid>
             <MudItem xs="12">
-                <MudTable Items="@items" Bordered="true" Height="60vh" FixedHeader="true">
+                <MudTable Items="@buyService.GetItemDtos()" Bordered="true" Height="60vh" FixedHeader="true">
+                    <ColGroup>
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                    </ColGroup>
                     <HeaderContent>
                         <MudTh>Tytuł</MudTh>
                         <MudTh>Autor</MudTh>
@@ -117,8 +131,8 @@
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
-                        <MudTd DataLabel="Cena">@context.Price zł</MudTd>
-                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
                     </RowTemplate>
                 </MudTable>
             </MudItem>
@@ -128,7 +142,7 @@
             <MudItem xs="3">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
                     <MudText Align="Align.Center">Cena wynosi: @PriceAll zł</MudText>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Wyczyść zakup</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearBuy()">Wyczyść zakup</MudButton>
                     <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
                 </MudStack>
             </MudItem>
@@ -148,9 +162,9 @@
     public bool AudioBook { get; set; }
     public int AuthorId { get; set; }
     public int GenreId { get; set; }
-    public double PriceValueMin { get; set; }
-    public double PriceValueMax { get; set; }
-    public string Value { get; set; }
+    public decimal PriceValueMin { get; set; } = 0;
+    public decimal PriceValueMax { get; set; } = 0;
+    public string SearchValue { get; set; }
     public bool expanded = false;
     public bool firstExpand = true;
     private HttpClient httpClient;
@@ -161,9 +175,55 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        PriceValueMin = 20;
-        PriceValueMax = 100;
         httpClient = clientFactory.CreateClient("Anonymous");
+    }
+
+    private async Task Search()
+    {
+
+        List<ItemDto> searchResponse = null;
+
+        if(!expanded)
+        {
+            searchResponse = await httpClient.GetFromJsonAsync<List<ItemDto>>($"/api/search/SearchItem/{SearchValue}");
+        }
+        else
+        {
+            if(PriceValueMax < PriceValueMin)
+            {
+                Snackbar.Add("Cena maksymalna nie może być mniejsza niż cena minimalna", Severity.Error);
+            }
+            else
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"/api/search/SearchExtended");
+                request.Headers.Add("phrase", SearchValue);
+                request.Headers.Add("autorID", AuthorId.ToString());
+                request.Headers.Add("genreID", GenreId.ToString());
+                request.Headers.Add("minPrice", PriceValueMin.ToString());
+                request.Headers.Add("maxPrice", PriceValueMax.ToString());
+                request.Headers.Add("isHard", Hard.ToString());
+                request.Headers.Add("isSoft", Soft.ToString());
+                request.Headers.Add("isEbook", Ebook.ToString());
+                request.Headers.Add("isAudiobook", AudioBook.ToString());
+                var response = await httpClient.SendAsync(request);
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+                if (response.IsSuccessStatusCode)
+                {
+                    searchResponse = await response.Content.ReadFromJsonAsync<List<ItemDto>>();
+                }
+            }
+
+        }
+
+        if(searchResponse == null)
+        {
+            Snackbar.Add($"Wystąpił błąd przy wyszukiwaniu publikacji dla frazy: \"{SearchValue}\"", Severity.Error);
+        }
+        else
+        {
+            items = searchResponse;
+            Snackbar.Add($"Pomyślnie wyszukano publikacje dla frazy: \"{SearchValue}\"", Severity.Success);
+        }
     }
 
     private async Task OnExpandCollapseClick()
@@ -193,6 +253,115 @@
             else
             {
                 authors = authorsResponse;
+            }
+        }
+    }
+
+    async Task AddToPurchase(DialogModel model)
+    {
+        var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
+        var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zakupu", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var data = (AddDialogReturnModel)result.Data;
+
+            var request = items.Where(i => i.Id == data.ID).Select(i => new AddItemToBucketRequest
+                {
+                    ItemId = i.Id,
+                    TypeId = i.TypeDto.Id,
+                    Price = i.Price,
+                    EmployeeId = 1
+                }).First();
+
+            var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/purchase/AddItemToBucket", request);
+
+            if(response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<bool>();
+                if(responseData)
+                {
+                    buyService.Add(items.Where(i => i.Id == data.ID).First());
+
+                    Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add($"Nie udało się dodać {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+            }
+
+
+
+            if (data.ChangeTab)
+            {
+                ChangeTab(summaryTab);
+            }
+        }
+    }
+
+    async Task RemoveFromPurchase(DialogModel model)
+    {
+        var parameters = new DialogParameters<RemoveDialog> { { x => x.Model, model }, { x=>x.Content, "zakupu"} };
+        var dialog = await dialogService.ShowAsync<RemoveDialog>("Usuń z zakupu", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var data = (RemoveDialogReturnModel)result.Data;
+            string title = data.Title;
+
+            if (data.Remove)
+            {
+                var response = await httpClient.PostAsync($"/api/purchase/RemoveItemFromBucket/{data.ID}",null);
+
+                if(response.IsSuccessStatusCode)
+                {
+                    var responseValue = await response.Content.ReadFromJsonAsync<bool>();
+
+                    if (responseValue)
+                    {
+                        buyService.Remove(data.ID);
+
+                        Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Nie udało się usunąć {data.Title} z zakupu. Skontaktuj się z administratorem. DEBUG: value", Severity.Error);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem. DEBUG: status code", Severity.Error);
+                }
+
+            }
+        }
+    }
+
+    async Task ClearBuy()
+    {
+        var parameters = new DialogParameters<ClearDialog> { { x => x.Content, "zakupu" } };
+        var dialog = await dialogService.ShowAsync<ClearDialog>("Wyczyść zakup", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            if ((bool)result.Data)
+            {
+                // TODO: clear via controller and UI
+
+                buyService.Clear();
+
+                Snackbar.Add("Pomyślnie wyczyszczono koszyk zakupu.", Severity.Success);
             }
         }
     }

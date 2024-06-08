@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor;
 using MudBlazor.Services;
+using PearlBookstore.WEB.Client.Services;
 using PearlBookstore.WEB.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+
+builder.Services.AddSingleton<BuyItemsService>();
 
 var app = builder.Build();
 

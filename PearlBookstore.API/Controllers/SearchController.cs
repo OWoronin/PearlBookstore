@@ -65,7 +65,7 @@ namespace PearlBookstore.API.Controllers
         }
 
         [HttpGet("SearchExtended")]
-        public async Task<List<ItemDto>> SearchItemsExtended([FromHeader] string phrase, [FromHeader] int autorID, [FromHeader] int genreID, [FromHeader] bool isHard, [FromHeader] bool isSoft, [FromHeader] bool isEbook, [FromHeader] bool isAudiobook)
+        public async Task<List<ItemDto>> SearchItemsExtended([FromHeader] string phrase, [FromHeader] int autorID, [FromHeader] int genreID, [FromHeader] decimal minPrice, [FromHeader] decimal maxPrice, [FromHeader] bool isHard, [FromHeader] bool isSoft, [FromHeader] bool isEbook, [FromHeader] bool isAudiobook)
         {
             var items = context.Items
                 .Include(i => i.Author)
@@ -83,6 +83,16 @@ namespace PearlBookstore.API.Controllers
             if (genreID > 0)
             {
                 items = items.Where(item => item.Genres.Select(g => g.GenreId).Contains(genreID));
+            }
+
+            if (minPrice > 0)
+            {
+                items = items.Where(item => item.Price > minPrice);
+            }
+
+            if (maxPrice > 0)
+            {
+                items = items.Where(item => item.Price < maxPrice);
             }
 
             if (isHard)
@@ -110,26 +120,29 @@ namespace PearlBookstore.API.Controllers
             {
                 foreach (var type in item.Types)
                 {
-
-                    if (type.TypeId == 1 && !isHard)
+                    if (isHard || isSoft || isEbook || isAudiobook)
                     {
-                        continue;
+                        if (type.TypeId == 1 && !isHard)
+                        {
+                            continue;
+                        }
+
+                        if (type.TypeId == 2 && !isSoft)
+                        {
+                            continue;
+                        }
+
+                        if (type.TypeId == 3 && !isEbook)
+                        {
+                            continue;
+                        }
+
+                        if (type.TypeId == 4 && !isAudiobook)
+                        {
+                            continue;
+                        }
                     }
 
-                    if (type.TypeId == 2 && !isSoft)
-                    {
-                        continue;
-                    }
-
-                    if (type.TypeId == 3 && !isEbook)
-                    {
-                        continue;
-                    }
-
-                    if (type.TypeId == 4 && !isAudiobook)
-                    {
-                        continue;
-                    }
 
                     List<GenreDto> genreDtos = new List<GenreDto>();
                     foreach (var genre in item.Genres)

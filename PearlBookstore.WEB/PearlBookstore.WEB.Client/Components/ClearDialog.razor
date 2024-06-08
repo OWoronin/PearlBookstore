@@ -1,0 +1,24 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText>Czy na pewno chcesz wyczyścić koszyk @Content?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="NoAnswer">Nie</MudButton>
+        <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="YesAnswer">Tak</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    [Parameter] public string Content { get; set; }
+
+    private void YesAnswer()
+    {
+        Dialog.Close(DialogResult.Ok(true));
+    }
+
+    private void NoAnswer()
+    {
+        Dialog.Close(DialogResult.Ok(false));
+    }
+}

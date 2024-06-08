@@ -11,14 +11,19 @@ namespace PearlBookstore.WEB.Client.Services
             items = [];
         }
 
+        public List<ItemDto> GetItemDtos()
+        {
+            return items;
+        }
+
         public void Add(ItemDto item)
         {
             items.Add(item);
         }
 
-        public void Remove(ItemDto item)
+        public void Remove(int ID)
         {
-            items.Remove(item);
+            items.RemoveAll(x => x.Id == ID);
         }
 
         public void Clear()
