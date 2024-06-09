@@ -1,5 +1,5 @@
 ﻿using PearlBookstore.API.Models;
-using PearlBookstore.Shared.RequestsResponses;
+using PearlBookstore.Shared.RequestsResponses.Requests;
 
 namespace PearlBookstore.API.Services
 {

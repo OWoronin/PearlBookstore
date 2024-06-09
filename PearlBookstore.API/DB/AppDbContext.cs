@@ -14,15 +14,15 @@ namespace PearlBookstore.API.DB
         public DbSet<PearlBookstore.API.Models.Type> Types { get; set; }
         public DbSet<User> Users { get; set; }
 
-        public DbSet<Purchase> Purchases { get; set;  }
+        public DbSet<Purchase> Purchases { get; set; }
 
         public DbSet<Return> Returns { get; set; }
 
         public DbSet<OrderStatus> Status { get; set; }
 
-		public DbSet<Order> Orders { get; set; }
+        public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrdersItems { get; set; }
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
@@ -31,14 +31,14 @@ namespace PearlBookstore.API.DB
                 new Role() { Name = "Kierownik", Id = 2 }
                 );
 
-			modelBuilder.Entity<OrderStatus>().HasData(
-				new OrderStatus() { Name = "W trakcie realizacji", Id = 1 },
-				new OrderStatus() { Name = "Zrealizowane", Id = 2 },
-				new OrderStatus() { Name = "Niezrealizowane", Id = 3 }
-				);
+            modelBuilder.Entity<OrderStatus>().HasData(
+                new OrderStatus() { Name = "W trakcie realizacji", Id = 1 },
+                new OrderStatus() { Name = "Zrealizowane", Id = 2 },
+                new OrderStatus() { Name = "Niezrealizowane", Id = 3 }
+                );
 
-			modelBuilder.Entity<User>().HasData(
-                new User() { Name = "Jakub", Surname = "Juszczak", Login = "JJ", Password = "1234", RoleId = 2, Id = 1 }
+            modelBuilder.Entity<User>().HasData(
+                new User() { Id = 1, Name = "Jakub", Surname = "Juszczak", Login = "JJ", Password = "1234", RoleId = 2 }
                 );
 
             modelBuilder.Entity<Genre>().HasData(

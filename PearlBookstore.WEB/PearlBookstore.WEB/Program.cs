@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddHttpClient("Anonymous", client => client.BaseAddress = new Uri("http://pearlbookstore.api:8080/"));
+builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri("http://pearlbookstore.api:8080/"));
 
 builder.Services.AddMudServices(config =>
 {
@@ -26,6 +26,8 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddSingleton<BuyItemsService>();
+builder.Services.AddSingleton<CurrentUser>();
+builder.Services.AddSingleton<EventAggregator>();
 
 var app = builder.Build();
 

@@ -26,6 +26,9 @@ namespace PearlBookstore.API.Models
 
         public ICollection<ItemType> Types { get; } = new List<ItemType>();
 
+        //
+
+        public ICollection<Purchase> Purchases { get; }
 
     }
 }

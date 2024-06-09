@@ -1,0 +1,59 @@
+﻿@page "/login"
+@rendermode InteractiveWebAssembly
+@inject IHttpClientFactory clientFactory
+@inject NavigationManager navigationManager
+@inject EventAggregator EventAggregator
+@inject ISnackbar Snackbar
+@inject CurrentUser current
+
+<PageTitle>Panel logowania</PageTitle>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Panel logowania</MudText>
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudTextField @bind-Value="request.Login" Label="Login" Placeholder="Login" Class="m-2"/>
+    <MudTextField @bind-Value="request.Password" Label="Hasło" InputType="InputType.Password" Class="m-2" />
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="m-2" OnClick="OnSubmit">Zaloguj</MudButton>
+</MudContainer>
+
+@code {
+    LoginRequest request = new();
+
+    private async Task OnSubmit()
+    {
+        if(request.Login == string.Empty)
+        {
+            Snackbar.Add($"Login jest wymagany", Severity.Error);
+        }
+        else if(request.Password == string.Empty)
+        {
+            Snackbar.Add($"Hasło jest wymagane", Severity.Error);
+        }
+        else
+        {
+            var httpClient = clientFactory.CreateClient("API");
+            var response = await httpClient.PostAsJsonAsync<LoginRequest>("/api/user/Login", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (responseData != null)
+                {
+                    if (responseData.Id != -1)
+                    {
+                        current.ID = responseData.Id;
+                        current.Name = responseData.Name;
+                        current.Surname = responseData.Surname;
+                        current.IsLogged = true;
+                        current.RoleName = responseData.RoleName;
+                        current.RoleID = responseData.RoleId;
+                        current.Initials = $"{current.Name[0].ToString().ToUpper()}{current.Surname[0].ToString().ToUpper()}";
+                        Snackbar.Add($"Pomyślnie zalogowano jako: {current.Name} {current.Surname}", Severity.Success);
+                        EventAggregator.Publish("Logged");
+                        navigationManager.NavigateTo("/");
+                    }
+                }
+            }
+        }
+        
+        
+    }
+
+}

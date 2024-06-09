@@ -1,0 +1,52 @@
+﻿@rendermode InteractiveWebAssembly
+@inject CurrentUser current
+@inject NavigationManager navigationManager
+@inject EventAggregator EventAggregator
+@if(current.IsLogged)
+{
+    <MudAvatar Color="Color.Primary">@Initials</MudAvatar>
+    <MudText Class="m-2">@Name @Surname - @RoleName</MudText>
+    <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="m-2">Wyloguj</MudButton>
+}
+else
+{
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="m-2" OnClick="Login">Zaloguj</MudButton>
+}
+@code {
+    public string Initials { get; set; }
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    public string RoleName { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if(!current.IsLogged)
+        {
+            Initials = "NN";
+            Name = "Niezalogowany";
+            Surname = "Niezalogowany";
+            RoleName = "Niezalogowany";
+        }
+        else
+        {
+            Name = current.Name;
+            Surname = current.Surname;
+            Initials = current.Initials;
+            RoleName = current.RoleName;
+        }
+        EventAggregator.Subscribe("Logged", HandleActionCompleted);
+    }
+
+    private void Login()
+    {
+        navigationManager.NavigateTo("/login");
+    }
+
+    Task HandleActionCompleted()
+    {
+        InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
+    }
+
+}

@@ -2,29 +2,37 @@
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
 using PearlBookstore.API.Models;
-using PearlBookstore.Shared.RequestsResponses;
+using PearlBookstore.API.Services;
+using PearlBookstore.Shared.RequestsResponses.Requests;
+using PearlBookstore.Shared.RequestsResponses.Responses;
 
 namespace PearlBookstore.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController(AppDbContext context) : ControllerBase
+    public class UserController(AppDbContext context, CurrentEmployee employee) : ControllerBase
     {
 
         [HttpPost("Login")]
-        public async Task<LoginResponse> UserLogin(LoginData data)
+        public async Task<LoginResponse> UserLogin(LoginRequest data)
         {
             //TO DO  data validation, roles conditions
 
-            var user = await context.Users.Include(u => u.Role).Where(u => u.Login == data.Login && u.Password == data.Password).FirstOrDefaultAsync();
+            var user = await context.Users.Include(u => u.Role).Where(u => u.Login == data.Login && u.Password == data.Password).SingleOrDefaultAsync();
 
             LoginResponse login = new LoginResponse();
+            login.Id = -1;
 
             if (user != null)
             {
                 login.Login = user.Login;
                 login.Id = user.Id;
                 login.RoleId = user.Role.Id;
+                login.RoleName = user.Role.Name;
+                login.Name = user.Name;
+                login.Surname = user.Surname;
+
+                employee.Current = user;
             }
 
             return await Task.FromResult(login);
@@ -32,7 +40,7 @@ namespace PearlBookstore.API.Controllers
         }
 
         [HttpPost("Registration")]
-        public async Task<RegistrationResponse> UserRegistration(RegistrationData data)
+        public async Task<RegistrationResponse> UserRegistration(RegistrationRequest data)
         {
 
             var user = await context.Users.Where(u => u.Login == data.Login).FirstOrDefaultAsync();
@@ -41,7 +49,7 @@ namespace PearlBookstore.API.Controllers
 
             if (user == null)
             {
-                var newUser = new User(); 
+                var newUser = new User();
                 newUser.Name = data.Name;
                 newUser.Surname = data.Surname;
                 newUser.Login = data.Login;
@@ -62,7 +70,7 @@ namespace PearlBookstore.API.Controllers
                     registrationResponse.Success = true;
                 }
 
-               
+
             }
             else
             {
@@ -70,7 +78,7 @@ namespace PearlBookstore.API.Controllers
                 registrationResponse.Message = "Ten login jest zajęty!";
             }
 
-           
+
 
             return await Task.FromResult(registrationResponse);
         }

@@ -29,7 +29,6 @@
                             <MudSelect Label="Autor" @bind-Value="AuthorId" Placeholder="Autor" T="int" Clearable="true" Strict="true">
                                 @if(authors != null)
                                 {
-                                    @*<MudSelectItem Value="0" Disabled>Autor</MudSelectItem>*@
                                     @foreach (var type in authors)
                                     {
                                         <MudSelectItem Value="@type.Id">@type.Name @type.Surname</MudSelectItem>
@@ -40,7 +39,6 @@
                             <MudSelect Label="Gatunek" @bind-Value="GenreId" Placeholder="Gatunek" T="int" Clearable="true" Strict="true">
                                 @if(genres != null)
                                 {
-                                    @*<MudSelectItem Value="0" Disabled>Gatunek</MudSelectItem>*@
                                     @foreach (var type in genres)
                                     {
                                         <MudSelectItem Value="@type.Id">@type.Name</MudSelectItem>
@@ -175,7 +173,9 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        httpClient = clientFactory.CreateClient("Anonymous");
+        httpClient = clientFactory.CreateClient("API");
+        // HttpClient client = new HttpClient();
+        // client.BaseAddress = ""
     }
 
     private async Task Search()
@@ -232,7 +232,7 @@
         if(firstExpand)
         {
             firstExpand = false;
-            var genresResponse = await httpClient.GetFromJsonAsync<List<GenreDto>>("api/genre/All");
+            var genresResponse = await httpClient.GetFromJsonAsync<List<GenreDto>>("/api/genre/All");
             if(genresResponse == null || genresResponse.Count == 0)
             {
                 expanded = !expanded;
@@ -243,7 +243,7 @@
                 genres = genresResponse;
             }
 
-            var authorsResponse = await httpClient.GetFromJsonAsync<List<AuthorDto>>("api/author/All");
+            var authorsResponse = await httpClient.GetFromJsonAsync<List<AuthorDto>>("/api/author/All");
 
             if(authorsResponse == null || authorsResponse.Count == 0)
             {
@@ -280,17 +280,25 @@
 
             if(response.IsSuccessStatusCode)
             {
-                var responseData = await response.Content.ReadFromJsonAsync<bool>();
-                if(responseData)
+                var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+                if (responseData != null)
                 {
-                    buyService.Add(items.Where(i => i.Id == data.ID).First());
+                    if (responseData.IsSuccess)
+                    {
+                        buyService.Add(items.Where(i => i.Id == data.ID).First());
 
-                    Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                        Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add(responseData.Message, Severity.Error);
+                    }
                 }
                 else
                 {
-                    Snackbar.Add($"Nie udało się dodać {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                    Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
                 }
+
             }
             else
             {
@@ -324,22 +332,30 @@
 
                 if(response.IsSuccessStatusCode)
                 {
-                    var responseValue = await response.Content.ReadFromJsonAsync<bool>();
+                    var responseValue = await response.Content.ReadFromJsonAsync<DefaultResponse>();
 
-                    if (responseValue)
+                    if(responseValue != null)
                     {
-                        buyService.Remove(data.ID);
+                        if (responseValue.IsSuccess)
+                        {
+                            buyService.Remove(data.ID);
 
-                        Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                            Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                        }
+                        else
+                        {
+                            Snackbar.Add($"Nie udało się usunąć {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                        }
                     }
                     else
                     {
-                        Snackbar.Add($"Nie udało się usunąć {data.Title} z zakupu. Skontaktuj się z administratorem. DEBUG: value", Severity.Error);
+                        Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
                     }
+
                 }
                 else
                 {
-                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem. DEBUG: status code", Severity.Error);
+                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
                 }
 
             }
@@ -357,11 +373,23 @@
         {
             if ((bool)result.Data)
             {
-                // TODO: clear via controller and UI
+                await httpClient.PostAsJsonAsync<int>("/api/purchase/ClearBucket", 0);
 
                 buyService.Clear();
 
                 Snackbar.Add("Pomyślnie wyczyszczono koszyk zakupu.", Severity.Success);
+            }
+        }
+    }
+
+    async Task AcceptBuy()
+    {
+        var response = await httpClient.GetFromJsonAsync<DefaultResponse>("/api/purchase/Accept");
+        if(response != null)
+        {
+            if(response.IsSuccess)
+            {
+                buyService.Clear();
             }
         }
     }

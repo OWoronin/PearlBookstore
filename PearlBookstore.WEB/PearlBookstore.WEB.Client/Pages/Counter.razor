@@ -20,13 +20,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        LoginData login = new()
+        LoginRequest login = new()
             {
                 Login = "TestLogin",
                 Password = "Password"
             };
-        var httpClient = clientFactory.CreateClient("Anonymous");
-        var someData = await httpClient.PostAsJsonAsync<LoginData>("api/user/Login", login);
+        var httpClient = clientFactory.CreateClient("API");
+        var someData = await httpClient.PostAsJsonAsync<LoginRequest>("api/user/Login", login);
         if (someData != null)
         {
             var response = await someData.Content.ReadFromJsonAsync<LoginResponse>();

@@ -1,5 +1,4 @@
 ﻿@page "/"
-@inject IHttpClientFactory clientFactory
 <PageTitle>Home</PageTitle>
 
 <MudGrid>
@@ -32,26 +31,5 @@
 
 @code
 {
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     RegistrationData register = new()
-    //         {
-    //             Login = "Login",
-    //             Name = "Adam",
-    //             Password = "password",
-    //             Role = 1,
-    //             Surname = "Kot"
-    //         };
-    //     var httpClient = clientFactory.CreateClient("Anonymous");
-    //     var data = await httpClient.PostAsJsonAsync<RegistrationData>("api/user/Registration", register);
-    //     if (data != null)
-    //     {
-    //         var response = await data.Content.ReadFromJsonAsync<RegistrationResponse>();
-    //         if (response != null)
-    //         {
-    //             Console.WriteLine($"{response.Success}");
-    //         }
-    //     }
 
-    // }
 }
