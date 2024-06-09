@@ -1,27 +1,84 @@
 ﻿@rendermode InteractiveWebAssembly
-@inject CurrentUser current
+@inject CurrentUser currentUser
 @inject NavigationManager navigationManager
 @inject EventAggregator EventAggregator
-@if(current.IsLogged)
+
+@if (State != null)
 {
-    <MudAvatar Color="Color.Primary">@Initials</MudAvatar>
-    <MudText Class="m-2">@Name @Surname - @RoleName</MudText>
-    <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="m-2">Wyloguj</MudButton>
+    @if (State.IsLogged)
+    {
+        <MudAvatar Color="Color.Primary">@Initials</MudAvatar>
+        <MudText Class="m-2">@Name @Surname - @RoleName</MudText>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="m-2" @onclick="Logout">Wyloguj</MudButton>
+    }
+    else
+    {
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="m-2" @onclick="Login">Zaloguj</MudButton>
+    }
 }
 else
 {
-    <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="m-2" OnClick="Login">Zaloguj</MudButton>
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="m-2" @onclick="Login">Zaloguj</MudButton>
 }
+
 @code {
     public string Initials { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
     public string RoleName { get; set; }
+    public UserState State;
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-        if(!current.IsLogged)
+        base.OnInitializedAsync();
+        EventAggregator.Subscribe("Logged", HandleActionCompleted);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            State = await currentUser.GetUserStateAsync();
+            if (!State.IsLogged)
+            {
+                Initials = "NN";
+                Name = "Niezalogowany";
+                Surname = "Niezalogowany";
+                RoleName = "Niezalogowany";
+            }
+            else
+            {
+                Name = State.Name;
+                Surname = State.Surname;
+                Initials = State.Initials;
+                RoleName = State.RoleName;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void Login()
+    {
+        navigationManager.NavigateTo("/login");
+    }
+
+    private async Task Logout()
+    {
+        await currentUser.ClearUserStateAsync();
+        State = new UserState();
+        Initials = "NN";
+        Name = "Niezalogowany";
+        Surname = "Niezalogowany";
+        RoleName = "Niezalogowany";
+        EventAggregator.Publish("Logged");
+        navigationManager.NavigateTo("/");
+    }
+
+    private async Task HandleActionCompleted()
+    {
+        State = await currentUser.GetUserStateAsync();
+        if (!State.IsLogged)
         {
             Initials = "NN";
             Name = "Niezalogowany";
@@ -30,23 +87,11 @@ else
         }
         else
         {
-            Name = current.Name;
-            Surname = current.Surname;
-            Initials = current.Initials;
-            RoleName = current.RoleName;
+            Name = State.Name;
+            Surname = State.Surname;
+            Initials = State.Initials;
+            RoleName = State.RoleName;
         }
-        EventAggregator.Subscribe("Logged", HandleActionCompleted);
+        await InvokeAsync(StateHasChanged);
     }
-
-    private void Login()
-    {
-        navigationManager.NavigateTo("/login");
-    }
-
-    Task HandleActionCompleted()
-    {
-        InvokeAsync(StateHasChanged);
-        return Task.CompletedTask;
-    }
-
 }

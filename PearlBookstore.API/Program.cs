@@ -1,8 +1,18 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
 using PearlBookstore.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://pearlbookstore.web", "http://localhost:20220");
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -27,6 +37,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//app.UseCors(options => options.SetIsOriginAllowed(x => _ = true));
+app.UseCors();
 
 app.UseHttpsRedirection();
 

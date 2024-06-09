@@ -1,17 +1,27 @@
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor;
 using MudBlazor.Services;
 using PearlBookstore.WEB.Client.Services;
 using PearlBookstore.WEB.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
+//StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri("http://pearlbookstore.api:8080/"));
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://pearlbookstore.web", "http://localhost:20220");
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
+
+//builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri("https://pearlbookstore.api:8080/"));
+builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri("http://localhost:10110/"));
 
 builder.Services.AddMudServices(config =>
 {
@@ -26,7 +36,7 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddSingleton<BuyItemsService>();
-builder.Services.AddSingleton<CurrentUser>();
+builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddSingleton<EventAggregator>();
 
 var app = builder.Build();
@@ -44,6 +54,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
