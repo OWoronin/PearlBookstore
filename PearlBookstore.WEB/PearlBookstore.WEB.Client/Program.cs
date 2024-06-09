@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
@@ -20,8 +21,9 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<BuyItemsService>();
-builder.Services.AddScoped<CurrentUser>();
+//builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddSingleton<EventAggregator>();
 
 await builder.Build().RunAsync();

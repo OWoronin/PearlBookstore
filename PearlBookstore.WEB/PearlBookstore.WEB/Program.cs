@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using MudBlazor;
 using MudBlazor.Services;
 using PearlBookstore.WEB.Client.Services;
@@ -35,8 +36,10 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+builder.Services.AddBlazoredLocalStorage();
+
 builder.Services.AddSingleton<BuyItemsService>();
-builder.Services.AddScoped<CurrentUser>();
+//builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddSingleton<EventAggregator>();
 
 var app = builder.Build();

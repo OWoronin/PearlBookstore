@@ -93,7 +93,6 @@ namespace PearlBookstore.API.Controllers
         [HttpGet("Accept")]
         public async Task<DefaultResponse> Accept()
         {
-            employee.Current = new User() { Id = 1, Name = "Jakub", Surname = "Juszczak", Login = "JJ", Password = "1234", RoleId = 2 };
             string prefix = "Nie udało się zaakceptować zakupu.";
             DefaultResponse response = new();
             if (bucket.Items.Count == 0)

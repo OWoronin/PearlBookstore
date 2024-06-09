@@ -4,6 +4,8 @@
 @inject IDialogService dialogService
 @inject ISnackbar Snackbar
 @inject BuyItemsService buyService
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
 
 <PageTitle>Zakup publikację</PageTitle>
 <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zakup publikacje</MudText>
@@ -176,6 +178,18 @@
         httpClient = clientFactory.CreateClient("API");
         // HttpClient client = new HttpClient();
         // client.BaseAddress = ""
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if(!(await localStorage.ContainKeyAsync("currentUser")))
+            {
+                Snackbar.Add("Musisz się najpierw zalogować.", Severity.Warning);
+                navigationManager.NavigateTo("/login");
+            }
+        }
     }
 
     private async Task Search()

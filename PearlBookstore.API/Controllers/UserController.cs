@@ -83,6 +83,18 @@ namespace PearlBookstore.API.Controllers
             return await Task.FromResult(registrationResponse);
         }
 
+        [HttpGet("Logged/{userID}")]
+        public async Task<bool> IsUserLogged(int userID)
+        {
+            return await Task.FromResult(employee.Current.Id == userID);
+        }
+
+        [HttpPost("Logout")]
+        public Task Logout()
+        {
+            employee.Current = null;
+            return Task.CompletedTask;
+        }
     }
 }
 

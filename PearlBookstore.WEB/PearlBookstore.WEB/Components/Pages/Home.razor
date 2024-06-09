@@ -1,4 +1,7 @@
 ﻿@page "/"
+@inject ILocalStorageService localStorage
+@inject IHttpClientFactory clientFactory
+@inject EventAggregator EventAggregator
 <PageTitle>Home</PageTitle>
 
 <MudGrid>
@@ -31,5 +34,20 @@
 
 @code
 {
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            if(await localStorage.ContainKeyAsync("currentUser"))
+            {
+                var user = await localStorage.GetItemAsync<CurrentUser>("currentUser");
+                var httpClient = clientFactory.CreateClient("API");
+                if(!(await httpClient.GetFromJsonAsync<bool>($"/api/user/Logged/{user.ID}")))
+                {
+                    await localStorage.RemoveItemAsync("currentUser");
+                    EventAggregator.Publish("Logout");
+                }
+            }
+        }
+    }
 }

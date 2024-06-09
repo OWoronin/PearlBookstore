@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @inject EventAggregator EventAggregator
 @inject ISnackbar Snackbar
-@inject CurrentUser currentUser
+@inject ILocalStorageService localStorage
 
 <PageTitle>Panel logowania</PageTitle>
 <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Panel logowania</MudText>
@@ -38,17 +38,17 @@
                 {
                     if (responseData.Id != -1)
                     {
-                        var currentState = new UserState
-                            {
+                        var currentUser = new CurrentUser
+                        {
                                 ID = responseData.Id,
                                 Name = responseData.Name,
                                 Surname = responseData.Surname,
-                                IsLogged = true,
                                 RoleName = responseData.RoleName,
                                 Initials = $"{responseData.Name[0].ToString().ToUpper()}{responseData.Surname[0].ToString().ToUpper()}",
                                 RoleID = responseData.RoleId,
-                            };
-                        await currentUser.SetUserStateAsync(currentState);
+                        };
+
+                        await localStorage.SetItemAsync<CurrentUser>("currentUser", currentUser);
 
                         Snackbar.Add($"Pomyślnie zalogowano jako: {responseData.Name} {responseData.Surname}", Severity.Success);
                         EventAggregator.Publish("Logged");
