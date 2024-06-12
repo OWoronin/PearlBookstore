@@ -1,14 +1,10 @@
 ﻿namespace PearlBookstore.Shared.RequestsResponses.Requests
 {
-    public class AddItemToBucketRequest
+    public class ModifyCountOfItemInBucketRequest
     {
         public int ItemId { get; set; }
-        public int EmployeeId { get; set; }
-        public decimal Price { get; set; }
-
         public int TypeId { get; set; }
 
         public int ActionCounter { get; set; }
-
     }
 }

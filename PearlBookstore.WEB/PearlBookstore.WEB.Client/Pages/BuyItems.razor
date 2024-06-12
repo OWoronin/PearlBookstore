@@ -4,8 +4,8 @@
 @inject IDialogService dialogService
 @inject ISnackbar Snackbar
 @inject BuyItemsService buyService
-@inject ILocalStorageService localStorage
 @inject NavigationManager navigationManager
+@inject CurrentUserService currentUserService
 
 <PageTitle>Zakup publikację</PageTitle>
 <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zakup publikacje</MudText>
@@ -86,10 +86,10 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Dodaj do zakup" Style="display:flex;justify-content:center;">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})"  Disabled="context.Counter==0">
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name, TypeID = context.TypeDto.Id})"  Disabled="context.Counter==0">
                                 @if (context.Counter == 0)
                                 {
-                                    @("Niedostępny")
+                                    @("Zamów")
                                 }
                                 else
                                 {
@@ -112,19 +112,23 @@
     <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
         <MudGrid>
             <MudItem xs="12">
-                <MudTable Items="@buyService.GetItemDtos()" Bordered="true" Height="60vh" FixedHeader="true">
+                <MudTable Items="@buyService.GetItemDtos()" Bordered="true" Height="60vh" FixedHeader="true" CommitEditTooltip="Zmień ilość" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+                          RowEditCommit="ItemHasBeenCommitted" CanCancelEdit="true" EditTrigger="TableEditTrigger.EditButton" CancelEditTooltip="Anuluj">
                     <ColGroup>
-                        <col style="width:20%" />
-                        <col style="width:20%" />
-                        <col style="width:20%" />
-                        <col style="width:20%" />
-                        <col style="width:20%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
+                        <col style="width:14%" />
                     </ColGroup>
                     <HeaderContent>
                         <MudTh>Tytuł</MudTh>
                         <MudTh>Autor</MudTh>
                         <MudTh><MudTableSortLabel SortBy="new Func<ItemDto,object>(x=>x.TypeDto.Id)">Typ</MudTableSortLabel></MudTh>
                         <MudTh>Cena</MudTh>
+                        <MudTh>Ilość z zakupie</MudTh>
                         <MudTh>Usuń z zakupu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
@@ -132,8 +136,21 @@
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Ilość z zakupie">@context.ActionCounter</MudTd>
                         <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
                     </RowTemplate>
+                    <RowEditingTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Ilość z zakupie">
+                            <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                <MudNumericField @bind-Value="@context.ActionCounter" Required Min="1" T="int" Max="@context.Counter"/> 
+                            </MudStack>
+                        </MudTd>
+                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                    </RowEditingTemplate>
                 </MudTable>
             </MudItem>
             <MudItem xs="9">
@@ -141,9 +158,9 @@
             </MudItem>
             <MudItem xs="3">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
-                    <MudText Align="Align.Center">Cena wynosi: @PriceAll zł</MudText>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearBuy()">Wyczyść zakup</MudButton>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
+                    <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", @PriceAll)zł</MudText>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="ClearBuy">Wyczyść zakup</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="AcceptBuy">Zatwierdź zakup</MudButton>
                 </MudStack>
             </MudItem>
         </MudGrid>
@@ -151,7 +168,6 @@
 </MudTabs>
 
 @code {
-    decimal PriceAll;
 
     MudTabs tabs;
     MudTabPanel searchTab;
@@ -164,6 +180,7 @@
     public int GenreId { get; set; }
     public decimal PriceValueMin { get; set; } = 0;
     public decimal PriceValueMax { get; set; } = 0;
+    decimal PriceAll;
     public string SearchValue { get; set; }
     public bool expanded = false;
     public bool firstExpand = true;
@@ -171,23 +188,27 @@
     private List<GenreDto> genres;
     private List<AuthorDto> authors;
     private List<ItemDto> items;
+    private int EmployeeID;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         httpClient = clientFactory.CreateClient("API");
-        // HttpClient client = new HttpClient();
-        // client.BaseAddress = ""
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if(!(await localStorage.ContainKeyAsync("currentUser")))
+            if (!(await currentUserService.IsLoggedUser()))
             {
                 Snackbar.Add("Musisz się najpierw zalogować.", Severity.Warning);
                 navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                var user = await currentUserService.GetCurrentUser();
+                EmployeeID = user.ID;
             }
         }
     }
@@ -220,7 +241,6 @@
                 request.Headers.Add("isEbook", Ebook.ToString());
                 request.Headers.Add("isAudiobook", AudioBook.ToString());
                 var response = await httpClient.SendAsync(request);
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
                 if (response.IsSuccessStatusCode)
                 {
                     searchResponse = await response.Content.ReadFromJsonAsync<List<ItemDto>>();
@@ -236,7 +256,14 @@
         else
         {
             items = searchResponse;
-            Snackbar.Add($"Pomyślnie wyszukano publikacje dla frazy: \"{SearchValue}\"", Severity.Success);
+            if(searchResponse.Count == 0)
+            {
+                Snackbar.Add("Nie znaleziono publikacji dla frazy: \"{SearchValue}\"", Severity.Warning);
+            }
+            else
+            {
+                Snackbar.Add($"Pomyślnie wyszukano publikacje dla frazy: \"{SearchValue}\"", Severity.Success);
+            }
         }
     }
 
@@ -282,12 +309,13 @@
         {
             var data = (AddDialogReturnModel)result.Data;
 
-            var request = items.Where(i => i.Id == data.ID).Select(i => new AddItemToBucketRequest
+            var request = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).Select(i => new AddItemToBucketRequest
                 {
                     ItemId = i.Id,
                     TypeId = i.TypeDto.Id,
                     Price = i.Price,
-                    EmployeeId = 1
+                    EmployeeId = EmployeeID,
+                    ActionCounter = 1
                 }).First();
 
             var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/purchase/AddItemToBucket", request);
@@ -299,9 +327,27 @@
                 {
                     if (responseData.IsSuccess)
                     {
-                        buyService.Add(items.Where(i => i.Id == data.ID).First());
+                        var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/purchase/PriceOfAllInBucket");
 
-                        Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                        if(priceResponse != null)
+                        {
+                            if(priceResponse.IsSuccess)
+                            {
+                                PriceAll = priceResponse.Price;
+                                var itemToAdd = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).First();
+                                itemToAdd.ActionCounter = 1;
+                                buyService.Add(itemToAdd);
+                                Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                            }
+                            else
+                            {
+                                Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                            }
+                        }
+                        else
+                        {
+                            Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                        }
                     }
                     else
                     {
@@ -318,8 +364,6 @@
             {
                 Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
             }
-
-
 
             if (data.ChangeTab)
             {
@@ -352,13 +396,30 @@
                     {
                         if (responseValue.IsSuccess)
                         {
-                            buyService.Remove(data.ID);
+                            var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/purchase/PriceOfAllInBucket");
 
-                            Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                            if (priceResponse != null)
+                            {
+                                if (priceResponse.IsSuccess)
+                                {
+                                    PriceAll = priceResponse.Price;
+                                    buyService.Remove(data.ID);
+                                    Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                                }
+                                else
+                                {
+                                    Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                                }
+                            }
+                            else
+                            {
+                                Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                            }
+
                         }
                         else
                         {
-                            Snackbar.Add($"Nie udało się usunąć {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                            Snackbar.Add($"{responseValue.Message}", Severity.Error);
                         }
                     }
                     else
@@ -387,7 +448,9 @@
         {
             if ((bool)result.Data)
             {
-                await httpClient.PostAsJsonAsync<int>("/api/purchase/ClearBucket", 0);
+                await httpClient.PostAsync("/api/purchase/ClearBucket", null);
+
+                PriceAll = 0;
 
                 buyService.Clear();
 
@@ -398,12 +461,24 @@
 
     async Task AcceptBuy()
     {
-        var response = await httpClient.GetFromJsonAsync<DefaultResponse>("/api/purchase/Accept");
+        var response = await httpClient.GetFromJsonAsync<AcceptBuyResponse>("/api/purchase/Accept");
         if(response != null)
         {
             if(response.IsSuccess)
             {
+                Snackbar.Add("Pomyślnie dokonano zakupu.", Severity.Success);
                 buyService.Clear();
+                PriceAll = 0;
+                var parameters = new DialogParameters<PurchaseEvidenceDialog> { { x => x.Evidence, response.Evidence }, { x=>x.Date, response.Date} , { x=>x.Price, response.Price} };
+                var dialog = await dialogService.ShowAsync<PurchaseEvidenceDialog>("Paragon", parameters, new DialogOptions
+                    {
+                        CloseButton = true,
+                        Position = DialogPosition.Center
+                    });
+            }
+            else
+            {
+                Snackbar.Add($"{response.Message}", Severity.Error);
             }
         }
     }
@@ -411,5 +486,99 @@
     void ChangeTab(MudTabPanel panel)
     {
         tabs.ActivatePanel(panel);
+    }
+
+    private ItemDto objectBeforeEdit;
+
+    private void BackupItem(object data)
+    {
+        objectBeforeEdit = new()
+            {
+                Id = ((ItemDto)data).Id,
+                Title = ((ItemDto)data).Title,
+                AuthorDto = ((ItemDto)data).AuthorDto,
+                Counter = ((ItemDto)data).Counter,
+                Description = ((ItemDto)data).Description,
+                Price = ((ItemDto)data).Price,
+                YearPublication = ((ItemDto)data).YearPublication,
+                GenresDtos = ((ItemDto)data).GenresDtos,
+                TypeDto = ((ItemDto)data).TypeDto,
+                ActionCounter = ((ItemDto)data).ActionCounter
+            };
+    }
+
+    private void ResetItemToOriginalValues(object data)
+    {
+        ((ItemDto)data).Id = objectBeforeEdit.Id;
+        ((ItemDto)data).Title = objectBeforeEdit.Title;
+        ((ItemDto)data).AuthorDto = objectBeforeEdit.AuthorDto;
+        ((ItemDto)data).Counter = objectBeforeEdit.Counter;
+        ((ItemDto)data).Description = objectBeforeEdit.Description;
+        ((ItemDto)data).Price = objectBeforeEdit.Price;
+        ((ItemDto)data).YearPublication = objectBeforeEdit.YearPublication;
+        ((ItemDto)data).GenresDtos = objectBeforeEdit.GenresDtos;
+        ((ItemDto)data).TypeDto = objectBeforeEdit.TypeDto;
+        ((ItemDto)data).ActionCounter = objectBeforeEdit.ActionCounter;
+    }
+
+    private void ItemHasBeenCommitted(object element)
+    {
+        InvokeAsync(() => ChangeCount(element));
+    }
+
+    async Task ChangeCount(object element)
+    {
+        var request = new ModifyCountOfItemInBucketRequest
+            {
+                ItemId = ((ItemDto)element).Id,
+                TypeId = ((ItemDto)element).TypeDto.Id,
+                ActionCounter = ((ItemDto)element).ActionCounter
+            };
+        var response = await httpClient.PostAsJsonAsync<ModifyCountOfItemInBucketRequest>("/api/purchase/ModifyCount", request);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+            if (responseData != null)
+            {
+                if (responseData.IsSuccess)
+                {
+                    var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/purchase/PriceOfAllInBucket");
+
+                    if (priceResponse != null)
+                    {
+                        if (priceResponse.IsSuccess)
+                        {
+                            PriceAll = priceResponse.Price;
+                            StateHasChanged();
+                            Snackbar.Add($"Pomyślnie ilość przedmiotu: {((ItemDto)element).Title}, na: {((ItemDto)element).ActionCounter}");
+                        }
+                        else
+                        {
+                            Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                    }
+                    
+                }
+                else
+                {
+                    Snackbar.Add($"{responseData.Message}", Severity.Error);
+                    ResetItemToOriginalValues(element);
+                }
+            }
+            else
+            {
+                ResetItemToOriginalValues(element);
+                Snackbar.Add("Wystąpił błąd przy zmianie ilości przedmiotów w koszyku zakupu. Skontaktuj się z administratorem.", Severity.Error);
+            }
+        }
+        else
+        {
+            ResetItemToOriginalValues(element);
+            Snackbar.Add("Wystąpił błąd przy zmianie ilości przedmiotów w koszyku zakupu. Skontaktuj się z administratorem.", Severity.Error);
+        }
     }
 }

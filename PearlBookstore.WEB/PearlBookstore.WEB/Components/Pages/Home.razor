@@ -1,7 +1,7 @@
 ﻿@page "/"
-@inject ILocalStorageService localStorage
 @inject IHttpClientFactory clientFactory
 @inject EventAggregator EventAggregator
+@inject CurrentUserService currentUserService
 <PageTitle>Home</PageTitle>
 
 <MudGrid>
@@ -38,13 +38,13 @@
     {
         if(firstRender)
         {
-            if(await localStorage.ContainKeyAsync("currentUser"))
+            if (await currentUserService.IsLoggedUser())
             {
-                var user = await localStorage.GetItemAsync<CurrentUser>("currentUser");
+                var user = await currentUserService.GetCurrentUser();
                 var httpClient = clientFactory.CreateClient("API");
                 if(!(await httpClient.GetFromJsonAsync<bool>($"/api/user/Logged/{user.ID}")))
                 {
-                    await localStorage.RemoveItemAsync("currentUser");
+                    await currentUserService.RemoveCurrentUser();
                     EventAggregator.Publish("Logout");
                 }
             }

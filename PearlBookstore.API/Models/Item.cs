@@ -10,10 +10,7 @@ namespace PearlBookstore.API.Models
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public decimal Price { get; set; }
         public int YearPublication { get; set; }
-
-        public int Counter { get; set; }
 
         //
 
@@ -28,7 +25,7 @@ namespace PearlBookstore.API.Models
 
         //
 
-        public ICollection<Purchase> Purchases { get; }
+        public ICollection<ItemPurchase> Purchases { get; } = [];
 
     }
 }

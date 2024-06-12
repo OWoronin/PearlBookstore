@@ -7,5 +7,7 @@
         public string Title { get; set; }
 
         public string Type { get; set; }
+
+        public int TypeID { get; set; }
     }
 }

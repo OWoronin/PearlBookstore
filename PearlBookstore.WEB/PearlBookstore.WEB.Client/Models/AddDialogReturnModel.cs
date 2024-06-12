@@ -6,6 +6,8 @@
 
         public string Title { get; set; } = model.Title;
 
+        public int TypeID { get; set; } = model.TypeID;
+
         public bool ChangeTab { get; set; }
     }
 }

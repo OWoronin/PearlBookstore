@@ -9,7 +9,7 @@ namespace PearlBookstore.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
 
-    public class OrderController(AppDbContext context, Bucket bucket) : ControllerBase
+    public class OrderController(AppDbContext context, PurchaseBucket bucket) : ControllerBase
     {
         [HttpPost("AddToOrder")]
         public async Task<bool> AddToOrder(AddItemToBucketRequest request)
@@ -59,7 +59,7 @@ namespace PearlBookstore.API.Controllers
 
             DateTime current = DateTime.Now;
             DateOnly orderDate = new DateOnly(current.Year, current.Month, current.Day);
-            string evidence = $"{orderDate.Year}_{orderDate.Month}_{orderDate.Day}_{bucket.Items[0].EmployeeId}_{new Guid().ToString()}";
+            string evidence = $"{orderDate.Year}_{orderDate.Month}_{orderDate.Day}_{bucket.Items[0].EmployeeId}_{Guid.NewGuid()}";
 
             using var transaction = context.Database.BeginTransaction();
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PearlBookstore.API.DB;
 
@@ -11,9 +12,11 @@ using PearlBookstore.API.DB;
 namespace PearlBookstore.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240612064142_PurchaseChanges")]
+    partial class PurchaseChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4952,7 +4955,7 @@ namespace PearlBookstore.API.Migrations
 
                     b.HasIndex("TypeId");
 
-                    b.ToTable("ItemPurchases");
+                    b.ToTable("ItemPurchase");
                 });
 
             modelBuilder.Entity("PearlBookstore.API.Models.ItemType", b =>

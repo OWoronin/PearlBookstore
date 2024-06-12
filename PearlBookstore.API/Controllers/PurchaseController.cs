@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
 using PearlBookstore.API.Models;
 using PearlBookstore.API.Services;
@@ -9,7 +10,7 @@ namespace PearlBookstore.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PurchaseController(Bucket bucket, AppDbContext context, CurrentEmployee employee) : ControllerBase
+    public class PurchaseController(PurchaseBucket bucket, AppDbContext context, CurrentEmployee employee) : ControllerBase
     {
         [HttpPost("AddItemToBucket")]
         public async Task<DefaultResponse> AddItemToBucket(AddItemToBucketRequest request)
@@ -74,7 +75,7 @@ namespace PearlBookstore.API.Controllers
                     response.Message = $"{prefix} Publikacja w koszyku nie znajduje się w systemie.";
                     return await Task.FromResult(response);
                 }
-                sum += item.Price;
+                sum += bucket.Items[i].Price * bucket.Items[i].ActionCounter;
             }
             response.IsSuccess = true;
             response.Price = sum;
@@ -90,11 +91,41 @@ namespace PearlBookstore.API.Controllers
 
         }
 
+        [HttpPost("ModifyCount")]
+        public async Task<DefaultResponse> ModifyCount(ModifyCountOfItemInBucketRequest request)
+        {
+            string prefix = "Nie udało się zmodyfikować ilości publikacji w zakupie.";
+            var response = new DefaultResponse();
+            var item = context.Items.Where(i => i.Id == request.ItemId).FirstOrDefault();
+
+            if (item == null)
+            {
+                response.IsSuccess = false;
+                response.Message = $"{prefix} Publikacja nie znajduje się w systemie.";
+                return await Task.FromResult(response);
+            }
+
+            var itemInBucket = bucket.Items.Where(x => x.ItemId == request.ItemId && x.TypeId == request.TypeId).FirstOrDefault();
+
+            if (itemInBucket == null)
+            {
+                response.IsSuccess = false;
+                response.Message = $"{prefix} Dana publikacja nie znajduje się w koszyku zakupu.";
+                return await Task.FromResult(response);
+            }
+
+            itemInBucket.ActionCounter = request.ActionCounter;
+
+            response.IsSuccess = true;
+
+            return await Task.FromResult(response);
+        }
+
         [HttpGet("Accept")]
-        public async Task<DefaultResponse> Accept()
+        public async Task<AcceptBuyResponse> Accept()
         {
             string prefix = "Nie udało się zaakceptować zakupu.";
-            DefaultResponse response = new();
+            AcceptBuyResponse response = new();
             if (bucket.Items.Count == 0)
             {
                 response.IsSuccess = false;
@@ -103,6 +134,27 @@ namespace PearlBookstore.API.Controllers
             }
 
             using var transaction = context.Database.BeginTransaction();
+
+            var sum = bucket.Items.Sum(it => it.Price * it.ActionCounter);
+
+            DateTime current = DateTime.Now;
+            DateOnly purchaseDate = new(current.Year, current.Month, current.Day);
+            Guid newGuid = Guid.NewGuid();
+            string guidString = newGuid.ToString("N");
+            string firstEightChars = guidString[..8];
+
+            string purchaseID = $"{purchaseDate.Year}_{purchaseDate.Month}_{purchaseDate.Day}_{bucket.Items[0].EmployeeId}_{firstEightChars}";
+
+            var purchase = new Purchase
+            {
+                EmployeeId = bucket.Items[0].EmployeeId,
+                Employee = employee.Current,
+                Date = purchaseDate,
+                PurchaseID = purchaseID,
+                TotalPrice = sum
+            };
+
+            context.Purchases.Add(purchase);
 
             for (int i = 0; i < bucket.Items.Count; i++)
             {
@@ -116,29 +168,39 @@ namespace PearlBookstore.API.Controllers
                     return await Task.FromResult(response);
                 }
 
-                DateTime current = DateTime.Now;
-                DateOnly purchaseDate = new(current.Year, current.Month, current.Day);
-                string paymentID = $"{purchaseDate.Year}_{purchaseDate.Month}_{purchaseDate.Day}_{bucket.Items[0].EmployeeId}_{new Guid()}";
-
-                var purchase = new Purchase
+                var itemType = await context.ItemsTypes.Where(it => it.ItemId == item.Id && it.TypeId == bucket.Items[i].TypeId).FirstOrDefaultAsync();
+                if (itemType == null)
                 {
+                    response.IsSuccess = false;
+                    response.Message = "Publikacja o danym typie nie istenieje w systemie.";
+                    await transaction.RollbackAsync();
+                    return await Task.FromResult(response);
+                }
+                itemType.Counter -= bucket.Items[i].ActionCounter;
+
+                var itemPurchase = new ItemPurchase
+                {
+                    Counter = bucket.Items[i].ActionCounter,
+                    ItemId = bucket.Items[i].ItemId,
                     Item = item,
-                    ItemId = item.Id,
-                    Counter = 1,
-                    EmployeeId = employee.Current.Id,
-                    Employee = employee.Current,
-                    Date = purchaseDate,
-                    PaymentId = paymentID
+                    TypeId = bucket.Items[i].TypeId,
+                    Type = itemType.Type,
+                    Purchase = purchase,
+                    PurchaseID = purchase.Id
                 };
-                item.Counter--;
+
+                context.ItemPurchases.Add(itemPurchase);
 
             }
 
-            if (context.SaveChanges() == bucket.Items.Count)
+            if (context.SaveChanges() == bucket.Items.Count * 2 + 1)
             {
                 await transaction.CommitAsync();
                 bucket.Items.Clear();
                 response.IsSuccess = true;
+                response.Price = sum;
+                response.Date = purchaseDate;
+                response.Evidence = purchaseID;
                 return await Task.FromResult(response);
             }
             else

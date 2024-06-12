@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @inject EventAggregator EventAggregator
 @inject ISnackbar Snackbar
-@inject ILocalStorageService localStorage
+@inject CurrentUserService currentUserService
 
 <PageTitle>Panel logowania</PageTitle>
 <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Panel logowania</MudText>
@@ -16,6 +16,17 @@
 
 @code {
     LoginRequest request = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            if (await currentUserService.IsLoggedUser())
+            {
+                navigationManager.NavigateTo("/");
+            }
+        }
+    }
 
     private async Task OnSubmit()
     {
@@ -38,17 +49,7 @@
                 {
                     if (responseData.Id != -1)
                     {
-                        var currentUser = new CurrentUser
-                        {
-                                ID = responseData.Id,
-                                Name = responseData.Name,
-                                Surname = responseData.Surname,
-                                RoleName = responseData.RoleName,
-                                Initials = $"{responseData.Name[0].ToString().ToUpper()}{responseData.Surname[0].ToString().ToUpper()}",
-                                RoleID = responseData.RoleId,
-                        };
-
-                        await localStorage.SetItemAsync<CurrentUser>("currentUser", currentUser);
+                        await currentUserService.AddCurrentUser(responseData);
 
                         Snackbar.Add($"Pomyślnie zalogowano jako: {responseData.Name} {responseData.Surname}", Severity.Success);
                         EventAggregator.Publish("Logged");

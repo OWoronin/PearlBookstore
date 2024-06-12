@@ -1,0 +1,413 @@
+﻿@page "/return"
+@rendermode InteractiveAuto
+@inject IHttpClientFactory clientFactory
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+@inject ReturnItemsService returnService
+@inject NavigationManager navigationManager
+@inject CurrentUserService currentUserService
+
+<PageTitle>Zwróć publikacje</PageTitle>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zwróć publikacje</MudText>
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-12" Centered="true" @ref="tabs">
+    <MudTabPanel Text="Podaj identyfikator zakupu" @ref="searchTab">
+        <MudGrid>
+            <MudItem xs="10">
+                <MudTextField Clearable="true" @bind-Value="@SearchValue" AutoFocus="true" Placeholder="Numer dowodu zakupu" />
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton ButtonType="ButtonType.Submit" Color="Color.Success" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Search" Class="m-3" OnClick="Search">Wyszukaj zwrot</MudButton>
+            </MudItem>
+
+            @*--------------------------------------------------------------------------------------------*@
+            <MudItem xs="12">
+                <MudTable Items="@items" Bordered="true" Height="45vh" FixedHeader="true">
+                    <HeaderContent>
+                        <MudTh>Tytuł</MudTh>
+                        <MudTh>Autor</MudTh>
+                        <MudTh>Typ</MudTh>
+                        <MudTh>Cena</MudTh>
+                        <MudTh>Dodaj do zwrotu</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Dodaj do zwrotu">
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToReturn(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Dodaj</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+            <MudItem xs="10">
+
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    @*///////////////////////////////////////////////////////////////////////////////////////////////////////////////*@
+    <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTable Items="@returnService.GetItemDtos()" Bordered="true" CommitEditTooltip="Zmień cenę" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+                          RowEditCommit="ItemHasBeenCommitted" CanCancelEdit="true" EditTrigger="TableEditTrigger.EditButton" CancelEditTooltip="Anuluj" Height="55vh" FixedHeader="true">
+                    <ColGroup>
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh>Tytuł</MudTh>
+                        <MudTh>Autor</MudTh>
+                        <MudTh>Typ</MudTh>
+                        <MudTh>Cena</MudTh>
+                        <MudTh>Usuń ze zwrotu</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromReturn(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                    </RowTemplate>
+                    <RowEditingTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">
+                            <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                <MudNumericField @bind-Value="@context.Price" Required Min="20" Step=".01M" T="decimal" Format="F2"/> zł
+                            </MudStack>
+                        </MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
+                    </RowEditingTemplate>
+                    <EditButtonContent Context="button">
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+                    </EditButtonContent>
+                </MudTable>
+            </MudItem>
+            <MudItem xs="9">
+
+            </MudItem>
+            <MudItem xs="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
+                    <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", PriceAll) zł</MudText>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearReturn()">Wyczyść zwrot</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+@code {
+    decimal PriceAll;
+    public string SearchValue { get; set; }
+    MudTabs tabs;
+    MudTabPanel searchTab;
+    MudTabPanel summaryTab;
+    private int EmployeeID;
+    private List<ItemDto> items;
+    private HttpClient httpClient;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        httpClient = clientFactory.CreateClient("API");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!(await currentUserService.IsLoggedUser()))
+            {
+                Snackbar.Add("Musisz się najpierw zalogować.", Severity.Warning);
+                navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                var user = await currentUserService.GetCurrentUser();
+                EmployeeID = user.ID;
+            }
+        }
+    }
+    private async Task Search()
+    {
+
+        List<ItemDto> searchResponse = await httpClient.GetFromJsonAsync<List<ItemDto>>($"/api/search/SearchPurchase/{SearchValue}");
+
+        if (searchResponse == null)
+        {
+            Snackbar.Add($"Wystąpił błąd przy wyszukiwaniu zakupu. Skontaktuj się z administratorem.", Severity.Error);
+        }
+        else
+        {
+            items = searchResponse;
+            if(searchResponse.Count == 0)
+            {
+                Snackbar.Add("Nie znaleziono zakupu po podanym numerze.", Severity.Warning);
+            }
+            else
+            {   
+                Snackbar.Add($"Pomyślnie wyszukano zakup.", Severity.Success);
+            }
+        }
+    }
+
+    async Task AddToReturn(DialogModel model)
+    {
+        var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
+        var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zwrotu", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var data = (AddDialogReturnModel)result.Data;
+
+            var request = items.Where(i => i.Id == data.ID).Select(i => new AddItemToBucketRequest
+                {
+                    ItemId = i.Id,
+                    TypeId = i.Id,
+                    Price = i.Price,
+                    EmployeeId = EmployeeID
+                }).First();
+
+            var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/return/AddToReturnBucket", request);
+
+            if(response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+                if(responseData != null)
+                {
+                    if(responseData.IsSuccess)
+                    {
+                        var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/return/PriceOfAllInReturnBucket");
+
+                        if(priceResponse != null)
+                        {
+                            if(priceResponse.IsSuccess)
+                            {
+                                PriceAll = priceResponse.Price;
+                                returnService.Add(items.Where(i => i.Id == data.ID).First());
+                                Snackbar.Add($"Pomyślnie dodano {data.Title} do zwrotu.", Severity.Success);
+                            }
+                            else
+                            {
+                                Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                            }
+                        }
+                        else
+                        {
+                            Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add(responseData.Message, Severity.Error);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+            }
+
+            if (data.ChangeTab)
+            {
+                ChangeTab(summaryTab);
+            }
+        }
+    }
+
+    async Task RemoveFromReturn(DialogModel model)
+    {
+        var parameters = new DialogParameters<RemoveDialog> { { x => x.Model, model }, { x => x.Content, "zwrotu" } };
+        var dialog = await dialogService.ShowAsync<RemoveDialog>("Usuń ze zwrotu", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var data = (RemoveDialogReturnModel)result.Data;
+            string title = data.Title;
+
+            if (data.Remove)
+            {
+                var response = await httpClient.PostAsync($"/api/return/RemoveItemFromBucket/{data.ID}", null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseValue = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+
+                    if (responseValue != null)
+                    {
+                        if (responseValue.IsSuccess)
+                        {
+                            var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/return/PriceOfAllInBucket");
+
+                            if (priceResponse != null)
+                            {
+                                if (priceResponse.IsSuccess)
+                                {
+                                    PriceAll = priceResponse.Price;
+                                    returnService.Remove(data.ID);
+                                    Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                                }
+                                else
+                                {
+                                    Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                                }
+                            }
+                            else
+                            {
+                                Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                            }
+
+                        }
+                        else
+                        {
+                            Snackbar.Add($"{responseValue.Message}", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                    }
+
+                }
+                else
+                {
+                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                }
+            }
+        }
+    }
+
+    async Task ClearReturn()
+    {
+        var parameters = new DialogParameters<ClearDialog> { { x => x.Content, "zwrotu" } };
+        var dialog = await dialogService.ShowAsync<ClearDialog>("Wyczyść zwrot", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            if ((bool)result.Data)
+            {
+                await httpClient.PostAsync("/api/return/ClearBucket", null);
+
+                PriceAll = 0;
+
+                returnService.Clear();
+
+                Snackbar.Add("Pomyślnie wyczyszczono koszyk zwrotu.", Severity.Success);
+            }
+        }
+    }
+
+    async Task AcceptBuy()
+    {
+        var response = await httpClient.GetFromJsonAsync<DefaultResponse>("/api/return/AcceptReturnBucket");
+        if (response != null)
+        {
+            if (response.IsSuccess)
+            {
+                Snackbar.Add("Pomyślnie dokonano zwrotu.", Severity.Success);
+                returnService.Clear();
+                PriceAll = 0;
+            }
+            else
+            {
+                Snackbar.Add($"{response.Message}", Severity.Error);
+            }
+        }
+    }
+
+    void ChangeTab(MudTabPanel panel)
+    {
+        tabs.ActivatePanel(panel);
+    }
+
+    private ItemDto objectBeforeEdit;
+
+    private void BackupItem(object data)
+    {
+        objectBeforeEdit = new()
+            {
+                Id = ((ItemDto)data).Id,
+                Title = ((ItemDto)data).Title,
+                AuthorDto = ((ItemDto)data).AuthorDto,
+                Counter = ((ItemDto)data).Counter,
+                Description = ((ItemDto)data).Description,
+                Price = ((ItemDto)data).Price,
+                YearPublication = ((ItemDto)data).YearPublication,
+                GenresDtos = ((ItemDto)data).GenresDtos,
+                TypeDto = ((ItemDto)data).TypeDto,
+            };
+    }
+
+    private void ResetItemToOriginalValues(object data)
+    {
+        ((ItemDto)data).Id = objectBeforeEdit.Id;
+        ((ItemDto)data).Title = objectBeforeEdit.Title;
+        ((ItemDto)data).AuthorDto = objectBeforeEdit.AuthorDto;
+        ((ItemDto)data).Counter = objectBeforeEdit.Counter;
+        ((ItemDto)data).Description = objectBeforeEdit.Description;
+        ((ItemDto)data).Price = objectBeforeEdit.Price;
+        ((ItemDto)data).YearPublication = objectBeforeEdit.YearPublication;
+        ((ItemDto)data).GenresDtos = objectBeforeEdit.GenresDtos;
+        ((ItemDto)data).TypeDto = objectBeforeEdit.TypeDto;
+    }
+
+    private void ItemHasBeenCommitted(object element)
+    {
+        InvokeAsync(()=>ChangePrice(element));
+    }
+
+    async Task ChangePrice(object element)
+    {
+        var request = new ModifyPriceOfItemInBucketRequest
+            {
+                ItemId = ((ItemDto)element).Id,
+                Price = ((ItemDto)element).Price
+            };
+        var response = await httpClient.PostAsJsonAsync<ModifyPriceOfItemInBucketRequest>("/api/return/ModifyPriceOfItem", request);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+            if (responseData != null)
+            {
+                if (responseData.IsSuccess)
+                {
+                    Snackbar.Add($"Pomyślnie zmieniono cenę przedmiotu: {((ItemDto)element).Title}, na: {((ItemDto)element).Price} zł");
+                }
+                else
+                {
+                    Snackbar.Add($"{responseData.Message}", Severity.Error);
+                    ResetItemToOriginalValues(element);
+                }
+            }
+            else
+            {
+                ResetItemToOriginalValues(element);
+                Snackbar.Add("Wystąpił błąd przy zmianie ceny przedmiotu w koszyku zwrotu. Skontaktuj się z administratorem.", Severity.Error);
+            }
+        }
+        else
+        {
+            ResetItemToOriginalValues(element);
+            Snackbar.Add("Wystąpił błąd przy zmianie ceny przedmiotu w koszyku zwrotu. Skontaktuj się z administratorem.", Severity.Error);
+        }
+    }
+}

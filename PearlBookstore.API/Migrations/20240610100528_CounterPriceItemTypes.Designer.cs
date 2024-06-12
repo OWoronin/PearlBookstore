@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PearlBookstore.API.DB;
 
@@ -11,9 +12,11 @@ using PearlBookstore.API.DB;
 namespace PearlBookstore.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240610100528_CounterPriceItemTypes")]
+    partial class CounterPriceItemTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4922,37 +4925,6 @@ namespace PearlBookstore.API.Migrations
                             GenreId = 18,
                             ItemId = 291
                         });
-                });
-
-            modelBuilder.Entity("PearlBookstore.API.Models.ItemPurchase", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Counter")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PurchaseID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TypeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("PurchaseID");
-
-                    b.HasIndex("TypeId");
-
-                    b.ToTable("ItemPurchases");
                 });
 
             modelBuilder.Entity("PearlBookstore.API.Models.ItemType", b =>
@@ -10941,22 +10913,32 @@ namespace PearlBookstore.API.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Counter")
+                        .HasColumnType("int");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PurchaseID")
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentId")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(65,30)");
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TypeId");
 
                     b.ToTable("Purchases");
                 });
@@ -11132,33 +11114,6 @@ namespace PearlBookstore.API.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("PearlBookstore.API.Models.ItemPurchase", b =>
-                {
-                    b.HasOne("PearlBookstore.API.Models.Item", "Item")
-                        .WithMany("Purchases")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PearlBookstore.API.Models.Purchase", "Purchase")
-                        .WithMany("Items")
-                        .HasForeignKey("PurchaseID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PearlBookstore.API.Models.Type", "Type")
-                        .WithMany("Purchases")
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("Purchase");
-
-                    b.Navigation("Type");
-                });
-
             modelBuilder.Entity("PearlBookstore.API.Models.ItemType", b =>
                 {
                     b.HasOne("PearlBookstore.API.Models.Item", "Item")
@@ -11208,7 +11163,23 @@ namespace PearlBookstore.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("PearlBookstore.API.Models.Item", "Item")
+                        .WithMany("Purchases")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PearlBookstore.API.Models.Type", "Type")
+                        .WithMany("Purchases")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Employee");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("PearlBookstore.API.Models.User", b =>
@@ -11249,11 +11220,6 @@ namespace PearlBookstore.API.Migrations
             modelBuilder.Entity("PearlBookstore.API.Models.OrderStatus", b =>
                 {
                     b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("PearlBookstore.API.Models.Purchase", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("PearlBookstore.API.Models.Role", b =>

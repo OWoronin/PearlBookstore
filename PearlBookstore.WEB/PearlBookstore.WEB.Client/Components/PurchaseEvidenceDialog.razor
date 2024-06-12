@@ -1,0 +1,19 @@
+﻿<MudDialog>
+    <DialogContent>
+        Numer dowodu zakupu: @Evidence
+        Data zakupu: @Date
+        Łączna cena zakupu:@String.Format("{0:F2}", @Price)zł
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Ok" ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string Evidence { get; set; }
+    [Parameter] public DateOnly Date { get; set; }
+    [Parameter] public decimal Price { get; set; }
+
+    void Ok() => MudDialog.Close(DialogResult.Ok(true));
+}

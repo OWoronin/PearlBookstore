@@ -39,7 +39,9 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddSingleton<BuyItemsService>();
-//builder.Services.AddScoped<CurrentUser>();
+builder.Services.AddSingleton<ReturnItemsService>();
+builder.Services.AddSingleton<OrderItemsService>();
+builder.Services.AddScoped<CurrentUserService>();
 builder.Services.AddSingleton<EventAggregator>();
 
 var app = builder.Build();

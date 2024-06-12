@@ -1,0 +1,178 @@
+﻿@page "/order"
+@rendermode InteractiveAuto
+@inject IHttpClientFactory clientFactory
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+@inject OrderItemsService orderService
+@inject NavigationManager navigationManager
+@inject CurrentUserService currentUserService
+
+<PageTitle>Zwróć publikacje</PageTitle>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zwróć publikacje</MudText>
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-12" Centered="true" @ref="tabs">
+    <MudTabPanel Text="Podaj identyfikator zakupu" @ref="searchTab">
+        <MudGrid>
+            <MudItem xs="10">
+                <MudTextField Clearable="true" @bind-Value="@SearchValue" AutoFocus="true" Placeholder="Tytuł lub Autor" />
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton ButtonType="ButtonType.Submit" Color="Color.Success" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Search" Class="m-3" >Wyszukaj publikację</MudButton>
+            </MudItem>
+
+            @*--------------------------------------------------------------------------------------------*@
+            <MudItem xs="12">
+                <MudTable Items="@items" Bordered="true" Height="45vh" FixedHeader="true">
+                    <ColGroup>
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh>Tytuł</MudTh>
+                        <MudTh>Autor</MudTh>
+                        <MudTh>Typ</MudTh>
+                        <MudTh>Cena</MudTh>
+                        <MudTh>Dodaj do zamówienia</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Dodaj do zwrotu">
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToOrder(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Dodaj</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+            <MudItem xs="10">
+
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Przejdź do danych klienta</MudButton>
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    @*///////////////////////////////////////////////////////////////////////////////////////////////////////////////*@
+    <MudTabPanel Text="Podsumowanie" @ref="dataTab">
+        <MudGrid>
+            <MudItem xs="4">
+
+            </MudItem>
+            <MudItem xs="4">
+                <MudText Typo="Typo.h4" Align="Align.Center" Class="m-2">Podaj dane</MudText>
+                <MudTextField @bind-Value="@ClientName" Placeholder="Imię" Label="Imię" InputType="InputType.Text"/>
+                <MudTextField @bind-Value="@ClientSurname" Placeholder="Nazwisko" Label="Nazwisko" InputType="InputType.Text" />
+                <MudTextField @bind-Value="@ClientEmail" Placeholder="Adres email" Label="Adres email" InputType="InputType.Email" Mask="@emailMask" InputMode="InputMode.email"/>
+                <MudTextField @bind-Value="@ClientPhone" Placeholder="Numer telefonu" Label="Numer telefonu" InputType="InputType.Telephone" Mask="@(new PatternMask("000 000 000"))" InputMode="InputMode.tel"/>
+            </MudItem>
+            <MudItem xs="4">
+
+            </MudItem>
+            @*-----------------------------------------------------------------------------------------------------------*@
+            <MudItem xs="10">
+
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(searchTab)">Wróć do wyszukiwania</MudButton>
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    @*///////////////////////////////////////////////////////////////////////////////////////////////////////////////*@
+    <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTable Items="@orderService.GetItemDtos()" Bordered="true" CommitEditTooltip="Zmień cenę" Height="55vh" FixedHeader="true">
+                    <ColGroup>
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                        <col style="width:20%" />
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh>Tytuł</MudTh>
+                        <MudTh>Autor</MudTh>
+                        <MudTh>Typ</MudTh>
+                        <MudTh>Cena</MudTh>
+                        <MudTh>Usuń ze zwrotu</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromOrder(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                    </RowTemplate>
+                    <RowEditingTemplate>
+                        <MudTd DataLabel="Tytuł">@context.Title</MudTd>
+                        <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
+                        <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
+                        <MudTd DataLabel="Cena">
+                            <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                <MudNumericField @bind-Value="@context.Price" Required Min="20" Step=".01M" T="decimal" Format="F2" /> zł
+                            </MudStack>
+                        </MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
+                    </RowEditingTemplate>
+                    <EditButtonContent Context="button">
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+                    </EditButtonContent>
+                </MudTable>
+            </MudItem>
+            <MudItem xs="9">
+
+            </MudItem>
+            <MudItem xs="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
+                    <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", @PriceAll)zł</MudText>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearOrder()">Wyczyść zwrot</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    MudTabs tabs;
+    MudTabPanel searchTab;
+    MudTabPanel dataTab;
+    MudTabPanel summaryTab;
+    decimal PriceAll;
+    private List<ItemDto> items;
+    private int EmployeeID;
+    private HttpClient httpClient;
+    public string SearchValue { get; set; }
+    public string ClientName { get; set; }
+    public string ClientSurname { get; set; }
+    public string ClientEmail { get; set; }
+    public string ClientPhone { get; set; }
+    public IMask emailMask = RegexMask.Email();
+
+
+    async Task AddToOrder(DialogModel model)
+    {
+        
+    }
+
+    async Task RemoveFromOrder(DialogModel model)
+    {
+
+    }
+
+    async Task ClearOrder()
+    {
+        
+    }
+
+    void ChangeTab(MudTabPanel panel)
+    {
+        tabs.ActivatePanel(panel);
+    }
+
+}

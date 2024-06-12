@@ -40,8 +40,8 @@ namespace PearlBookstore.API.Controllers
                         Title = item.Title,
                         Description = item.Description,
                         YearPublication = item.YearPublication,
-                        Counter = item.Counter,
-                        Price = item.Price,
+                        Counter = type.Counter,
+                        Price = type.Price,
                         AuthorDto = new AuthorDto()
                         {
                             Id = item.Author.Id,
@@ -87,12 +87,12 @@ namespace PearlBookstore.API.Controllers
 
             if (minPrice > 0)
             {
-                items = items.Where(item => item.Price > minPrice);
+                items = items.Where(item => item.Types.Any(t => t.Price > minPrice));
             }
 
             if (maxPrice > 0)
             {
-                items = items.Where(item => item.Price < maxPrice);
+                items = items.Where(item => item.Types.Any(t => t.Price < maxPrice));
             }
 
             if (isHard)
@@ -143,6 +143,10 @@ namespace PearlBookstore.API.Controllers
                         }
                     }
 
+                    if ((maxPrice > 0 || minPrice > 0) && (type.Price > maxPrice || type.Price < minPrice))
+                    {
+                        continue;
+                    }
 
                     List<GenreDto> genreDtos = new List<GenreDto>();
                     foreach (var genre in item.Genres)
@@ -157,8 +161,8 @@ namespace PearlBookstore.API.Controllers
                         Title = item.Title,
                         Description = item.Description,
                         YearPublication = item.YearPublication,
-                        Counter = item.Counter,
-                        Price = item.Price,
+                        Counter = type.Counter,
+                        Price = type.Price,
                         AuthorDto = new AuthorDto()
                         {
                             Id = item.Author.Id,
@@ -178,6 +182,58 @@ namespace PearlBookstore.API.Controllers
             }
 
             return await Task.FromResult(result);
+        }
+
+        [HttpGet("SearchPurchase/{phrase}")]
+        public async Task<List<ItemDto>> SearchPurchase(string phrase)
+        {
+            var itemsPurchase = await context.Purchases
+                .Include(x => x.Items)
+                    .ThenInclude(i => i.Item)
+                        .ThenInclude(i => i.Author)
+                .Include(x => x.Items)
+                    .ThenInclude(i => i.Item)
+                        .ThenInclude(i => i.Genres)
+                            .ThenInclude(it => it.Genre)
+                .Include(x => x.Items)
+                    .ThenInclude(i => i.Type)
+                .Where(i => i.PurchaseID.Equals(phrase))
+                .FirstAsync();
+
+            var items = new List<ItemDto>();
+
+            foreach (var item in itemsPurchase.Items)
+            {
+                List<GenreDto> genreDtos = [];
+                foreach (var genre in item.Item.Genres)
+                {
+                    genreDtos.Add(new GenreDto() { Id = genre.Genre.Id, Name = genre.Genre.Name });
+                }
+                var itemDto = new ItemDto()
+                {
+                    Id = item.Item.Id,
+                    Title = item.Item.Title,
+                    Description = item.Item.Description,
+                    AuthorDto = new AuthorDto()
+                    {
+                        Id = item.Item.Author.Id,
+                        Name = item.Item.Author.Name,
+                        Surname = item.Item.Author.Surname,
+                    },
+                    YearPublication = item.Item.YearPublication,
+                    Counter = item.Counter,
+                    Price = item.Type.Items.First(x => x.TypeId == item.TypeId).Price,
+                    GenresDtos = genreDtos,
+                    TypeDto = new TypeDto()
+                    {
+                        Id = item.Type.Id,
+                        Name = item.Type.Name,
+                    }
+                };
+                items.Add(itemDto);
+            }
+
+            return await Task.FromResult(items);
         }
 
     }

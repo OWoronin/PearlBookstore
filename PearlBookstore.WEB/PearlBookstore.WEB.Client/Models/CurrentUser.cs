@@ -1,4 +1,4 @@
-﻿namespace PearlBookstore.WEB.Client.Services
+﻿namespace PearlBookstore.WEB.Client.Models
 {
     public class CurrentUser()
     {
