@@ -20,10 +20,12 @@ namespace PearlBookstore.API.DB
 
         public DbSet<Return> Returns { get; set; }
 
+        public DbSet<ItemReturn> ItemReturns { get; set; }
+
         public DbSet<OrderStatus> Status { get; set; }
 
         public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderItem> OrdersItems { get; set; }
+        public DbSet<OrderItem> ItemsOrder { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

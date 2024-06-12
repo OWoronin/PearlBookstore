@@ -7,5 +7,7 @@
         public string Title { get; set; } = model.Title;
 
         public bool Remove { get; set; }
+
+        public int TypeID { get; set; } = model.TypeID;
     }
 }

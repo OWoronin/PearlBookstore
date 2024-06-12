@@ -16,7 +16,9 @@ namespace PearlBookstore.API.Models
 
         //
 
-        public ICollection<ItemPurchase> Items { get; set; }
+        public ICollection<ItemPurchase> Items { get; set; } = [];
+
+        public ICollection<Return> Returns { get; set; } = [];
 
     }
 }

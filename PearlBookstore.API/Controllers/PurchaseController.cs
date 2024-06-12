@@ -18,7 +18,7 @@ namespace PearlBookstore.API.Controllers
             string prefix = "Nie udało się dodać publikacji do koszyka zakupu.";
             DefaultResponse response = new();
 
-            var item = context.Items.Where(i => i.Id == request.ItemId).FirstOrDefault();
+            var item = await context.Items.Where(i => i.Id == request.ItemId && i.Types.Select(t => t.TypeId).Contains(request.TypeId)).FirstOrDefaultAsync();
 
             if (item == null)
             {
@@ -26,19 +26,18 @@ namespace PearlBookstore.API.Controllers
                 response.Message = $"{prefix} Publikacja nie znajduje się w systemie.";
                 return await Task.FromResult(response);
             }
-
 
             bucket.Items.Add(request);
             response.IsSuccess = true;
             return await Task.FromResult(response);
         }
 
-        [HttpPost("RemoveItemFromBucket/{ItemId}")]
-        public async Task<DefaultResponse> RemoveItemFromBucket(int ItemId)
+        [HttpPost("RemoveItemFromBucket")]
+        public async Task<DefaultResponse> RemoveItemFromBucket(RemoveFromBucketRequest request)
         {
             string prefix = "Nie udało się usunąć publikacji z koszyka zakupu.";
             DefaultResponse response = new();
-            var item = context.Items.Where(i => i.Id == ItemId).FirstOrDefault();
+            var item = context.Items.Where(i => i.Id == request.ItemId && i.Types.Select(t => t.TypeId).Contains(request.TypeId)).FirstOrDefault();
 
             if (item == null)
             {
@@ -47,7 +46,7 @@ namespace PearlBookstore.API.Controllers
                 return await Task.FromResult(response);
             }
 
-            int removed = bucket.Items.RemoveAll(x => x.ItemId == ItemId);
+            int removed = bucket.Items.RemoveAll(x => x.ItemId == request.ItemId && x.TypeId == request.TypeId);
             if (removed == 0)
             {
                 response.IsSuccess = false;
@@ -96,7 +95,7 @@ namespace PearlBookstore.API.Controllers
         {
             string prefix = "Nie udało się zmodyfikować ilości publikacji w zakupie.";
             var response = new DefaultResponse();
-            var item = context.Items.Where(i => i.Id == request.ItemId).FirstOrDefault();
+            var item = context.Items.Where(i => i.Id == request.ItemId && i.Types.Select(t => t.TypeId).Contains(request.TypeId)).FirstOrDefault();
 
             if (item == null)
             {

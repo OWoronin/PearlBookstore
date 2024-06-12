@@ -86,7 +86,7 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Dodaj do zakup" Style="display:flex;justify-content:center;">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name, TypeID = context.TypeDto.Id})"  Disabled="context.Counter==0">
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id})"  Disabled="context.Counter==0">
                                 @if (context.Counter == 0)
                                 {
                                     @("Zamów")
@@ -137,7 +137,7 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Ilość z zakupie">@context.ActionCounter</MudTd>
-                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id})">Usuń</MudButton></MudTd>
                     </RowTemplate>
                     <RowEditingTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -149,7 +149,7 @@
                                 <MudNumericField @bind-Value="@context.ActionCounter" Required Min="1" T="int" Max="@context.Counter"/> 
                             </MudStack>
                         </MudTd>
-                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromPurchase(new DialogModel{ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                        <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
                     </RowEditingTemplate>
                 </MudTable>
             </MudItem>
@@ -386,7 +386,12 @@
 
             if (data.Remove)
             {
-                var response = await httpClient.PostAsync($"/api/purchase/RemoveItemFromBucket/{data.ID}",null);
+                RemoveFromBucketRequest request = new()
+                    {
+                        ItemId = data.ID,
+                        TypeId = data.TypeID
+                    };
+                var response = await httpClient.PostAsJsonAsync<RemoveFromBucketRequest>("/api/purchase/RemoveItemFromBucket", request);
 
                 if(response.IsSuccessStatusCode)
                 {
@@ -403,7 +408,7 @@
                                 if (priceResponse.IsSuccess)
                                 {
                                     PriceAll = priceResponse.Price;
-                                    buyService.Remove(data.ID);
+                                    buyService.Remove(data.ID, data.TypeID);
                                     Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
                                 }
                                 else
@@ -480,6 +485,10 @@
             {
                 Snackbar.Add($"{response.Message}", Severity.Error);
             }
+        }
+        else
+        {
+            Snackbar.Add("Nie udało się zaakceptować zakupu. Skontatkuj się z administratorem.", Severity.Error);
         }
     }
 

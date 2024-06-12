@@ -21,9 +21,9 @@ namespace PearlBookstore.WEB.Client.Services
             items.Add(item);
         }
 
-        public void Remove(int ID)
+        public void Remove(int ID, int typeId)
         {
-            items.RemoveAll(x => x.Id == ID);
+            items.RemoveAll(x => x.Id == ID && x.TypeDto.Id == typeId);
         }
 
         public void Clear()

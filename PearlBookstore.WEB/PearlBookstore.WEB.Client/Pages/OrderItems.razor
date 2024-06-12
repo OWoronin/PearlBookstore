@@ -42,7 +42,7 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Dodaj do zwrotu">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToOrder(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Dodaj</MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToOrder(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name})">Dodaj</MudButton>
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -106,7 +106,7 @@
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
-                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromOrder(new DialogModel(){ID = context.Id, Title = context.Title, Type = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromOrder(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name})">Usuń</MudButton></MudTd>
                     </RowTemplate>
                     <RowEditingTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>

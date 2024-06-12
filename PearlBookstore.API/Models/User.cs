@@ -13,7 +13,9 @@ namespace PearlBookstore.API.Models
         public int RoleId { get; set; }
         public Role Role { get; set; } = null!;
 
-        public ICollection<Purchase> Purchases { get; set; }
+        public ICollection<Purchase> Purchases { get; set; } = [];
+
+        public ICollection<Return> Returns { get; set; } = [];
 
     }
 }
