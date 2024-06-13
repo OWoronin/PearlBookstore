@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
+using PearlBookstore.API.Extensions;
 using PearlBookstore.API.Models;
 using PearlBookstore.API.Services;
 using PearlBookstore.Shared.RequestsResponses.Requests;
@@ -61,7 +62,7 @@ namespace PearlBookstore.API.Controllers
             else
             {
                 resposne.IsSuccess = false;
-                resposne.Message = $"{prefix} Podana publikacja nie znajduje się w koszyku zwrotu.";
+                resposne.Message = $"{prefix} Podana publikacja nie znajduje się w systemie.";
             }
             return await Task.FromResult(resposne);
         }
@@ -124,8 +125,8 @@ namespace PearlBookstore.API.Controllers
 
         }
 
-        [HttpGet("AcceptReturnBucket/{purchaseID}")]
-        public async Task<DefaultResponse> AcceptReturnBucket(int purchaseID)
+        [HttpPost("AcceptReturnBucket")]
+        public async Task<DefaultResponse> AcceptReturnBucket(AcceptReturnRequest request)
         {
             string prefix = "Nie udało się zaakceptować zwrotu.";
             DefaultResponse response = new();
@@ -136,12 +137,19 @@ namespace PearlBookstore.API.Controllers
                 return await Task.FromResult(response);
             }
 
-            var purchase = context.Purchases.Where(p => p.Id == purchaseID).FirstOrDefault();
+            var purchase = context.Purchases.Where(p => p.PurchaseID == request.PurchaseID).FirstOrDefault();
 
             if (purchase == null)
             {
                 response.IsSuccess = false;
                 response.Message = $"{prefix} Podany zakup nie istnieje w systemie.";
+                return await Task.FromResult(response);
+            }
+
+            if (purchase.Date.IsAtLeast14DaysEarlierThanToday())
+            {
+                response.IsSuccess = false;
+                response.Message = $"{prefix} Od daty zakupu minęło więcej niż 14 dni.";
                 return await Task.FromResult(response);
             }
 
@@ -159,10 +167,10 @@ namespace PearlBookstore.API.Controllers
                 EmployeeID = bucket.Items[0].EmployeeId,
                 TotalReturn = sum,
                 Purchase = purchase,
-                PurchaseID = purchaseID,
+                PurchaseID = purchase.Id,
             };
 
-            context.Purchases.Add(purchase);
+            context.Returns.Add(returnObj);
 
             for (int i = 0; i < bucket.Items.Count; i++)
             {
@@ -180,7 +188,7 @@ namespace PearlBookstore.API.Controllers
                 if (itemType == null)
                 {
                     response.IsSuccess = false;
-                    response.Message = "Publikacja o danym typie nie istenieje w systemie.";
+                    response.Message = "Publikacja o danym typie nie istnieje w systemie.";
                     await transaction.RollbackAsync();
                     return await Task.FromResult(response);
                 }

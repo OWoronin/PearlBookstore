@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PearlBookstore.API.DB;
+using PearlBookstore.API.Extensions;
 using PearlBookstore.API.Models;
 using PearlBookstore.Shared.Dtos;
+using PearlBookstore.Shared.RequestsResponses.Responses;
 
 namespace PearlBookstore.API.Controllers
 {
@@ -185,8 +187,10 @@ namespace PearlBookstore.API.Controllers
         }
 
         [HttpGet("SearchPurchase/{phrase}")]
-        public async Task<List<ItemDto>> SearchPurchase(string phrase)
+        public async Task<SearchPurchaseResponse> SearchPurchase(string phrase)
         {
+            var response = new SearchPurchaseResponse();
+            string prefix = "Nie udało się wyszukać zakupu.";
             var itemsPurchase = await context.Purchases
                 .Include(x => x.Items)
                     .ThenInclude(i => i.Item)
@@ -198,7 +202,21 @@ namespace PearlBookstore.API.Controllers
                 .Include(x => x.Items)
                     .ThenInclude(i => i.Type)
                 .Where(i => i.PurchaseID.Equals(phrase))
-                .FirstAsync();
+                .FirstOrDefaultAsync();
+
+            if (itemsPurchase == null)
+            {
+                response.IsSuccess = false;
+                response.Message = $"{prefix} Dany zakup nie istnieje w systemie.";
+                return await Task.FromResult(response);
+            }
+
+            if (itemsPurchase.Date.IsAtLeast14DaysEarlierThanToday())
+            {
+                response.IsSuccess = false;
+                response.Message = $"{prefix} Od daty zakupu minęło więcej niż 14 dni.";
+                return await Task.FromResult(response);
+            }
 
             var items = new List<ItemDto>();
 
@@ -209,6 +227,9 @@ namespace PearlBookstore.API.Controllers
                 {
                     genreDtos.Add(new GenreDto() { Id = genre.Genre.Id, Name = genre.Genre.Name });
                 }
+
+                var price = await context.ItemsTypes.Where(x => x.TypeId == item.TypeId && x.ItemId == item.ItemId).Select(x => x.Price).FirstAsync();
+
                 var itemDto = new ItemDto()
                 {
                     Id = item.Item.Id,
@@ -222,7 +243,7 @@ namespace PearlBookstore.API.Controllers
                     },
                     YearPublication = item.Item.YearPublication,
                     Counter = item.Counter,
-                    Price = item.Type.Items.First(x => x.TypeId == item.TypeId).Price,
+                    Price = price,
                     GenresDtos = genreDtos,
                     TypeDto = new TypeDto()
                     {
@@ -233,7 +254,9 @@ namespace PearlBookstore.API.Controllers
                 items.Add(itemDto);
             }
 
-            return await Task.FromResult(items);
+            response.Items = items;
+            response.IsSuccess = true;
+            return await Task.FromResult(response);
         }
 
     }

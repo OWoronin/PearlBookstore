@@ -8,7 +8,7 @@ namespace PearlBookstore.API.Models
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public ICollection<ItemType> Items { get; } = new List<ItemType>();
+        public ICollection<ItemType> Types { get; } = new List<ItemType>();
 
         public ICollection<ItemPurchase> Purchases { get; set; } = [];
 

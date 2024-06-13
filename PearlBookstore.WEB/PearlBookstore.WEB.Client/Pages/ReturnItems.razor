@@ -13,7 +13,7 @@
     <MudTabPanel Text="Podaj identyfikator zakupu" @ref="searchTab">
         <MudGrid>
             <MudItem xs="10">
-                <MudTextField Clearable="true" @bind-Value="@SearchValue" AutoFocus="true" Placeholder="Numer dowodu zakupu" />
+                <MudTextField Clearable="true" @bind-Value="@PurchaseSearchValue" AutoFocus="true" Placeholder="Numer dowodu zakupu" />
             </MudItem>
             <MudItem xs="2">
                 <MudButton ButtonType="ButtonType.Submit" Color="Color.Success" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Search" Class="m-3" OnClick="Search">Wyszukaj zwrot</MudButton>
@@ -22,11 +22,21 @@
             @*--------------------------------------------------------------------------------------------*@
             <MudItem xs="12">
                 <MudTable Items="@items" Bordered="true" Height="45vh" FixedHeader="true">
+                    <ColGroup>
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                    </ColGroup>
                     <HeaderContent>
                         <MudTh>Tytuł</MudTh>
                         <MudTh>Autor</MudTh>
                         <MudTh>Typ</MudTh>
                         <MudTh>Cena</MudTh>
+                        <MudTh>Ilość w zakupie</MudTh>
                         <MudTh>Dodaj do zwrotu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
@@ -34,8 +44,9 @@
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
+                        <MudTd DataLabel="Ilość w zakupie">@context.Counter</MudTd>
                         <MudTd DataLabel="Dodaj do zwrotu">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToReturn(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name})">Dodaj</MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToReturn(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id})">Dodaj</MudButton>
                         </MudTd>
                     </RowTemplate>
                 </MudTable>
@@ -61,12 +72,14 @@
                         <col />
                         <col />
                         <col />
+                        <col />
                     </ColGroup>
                     <HeaderContent>
                         <MudTh>Tytuł</MudTh>
                         <MudTh>Autor</MudTh>
                         <MudTh>Typ</MudTh>
                         <MudTh>Cena</MudTh>
+                        <MudTh>Ilość w zwrocie</MudTh>
                         <MudTh>Usuń ze zwrotu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
@@ -74,7 +87,8 @@
                         <MudTd DataLabel="Autor">@context.AuthorDto.Name @context.AuthorDto.Surname</MudTd>
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
-                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromReturn(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name})">Usuń</MudButton></MudTd>
+                        <MudTd DataLabel="Ilość w zwrocie">@context.ActionCounter</MudTd>
+                        <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => RemoveFromReturn(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id})">Usuń</MudButton></MudTd>
                     </RowTemplate>
                     <RowEditingTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -82,7 +96,12 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">
                             <MudStack Row="true" AlignItems="AlignItems.Baseline">
-                                <MudNumericField @bind-Value="@context.Price" Required Min="20" Step=".01M" T="decimal" Format="F2"/> zł
+                                <MudNumericField @bind-Value="@context.Price" Required Min="1" Step=".01M" T="decimal" Format="F2"/> zł
+                            </MudStack>
+                        </MudTd>
+                        <MudTd DataLabel="Ilość w zwrocie">
+                            <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                <MudNumericField @bind-Value="@context.ActionCounter" Required Min="1" T="int" Max="@context.Counter"/>
                             </MudStack>
                         </MudTd>
                         <MudTd DataLabel="Usuń ze zwrotu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
@@ -99,7 +118,7 @@
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
                     <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", PriceAll) zł</MudText>
                     <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearReturn()">Wyczyść zwrot</MudButton>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="AcceptReturn">Zatwierdź zwrot</MudButton>
                 </MudStack>
             </MudItem>
         </MudGrid>
@@ -107,7 +126,7 @@
 </MudTabs>
 @code {
     decimal PriceAll;
-    public string SearchValue { get; set; }
+    public string PurchaseSearchValue { get; set; }
     MudTabs tabs;
     MudTabPanel searchTab;
     MudTabPanel summaryTab;
@@ -140,7 +159,7 @@
     private async Task Search()
     {
 
-        List<ItemDto> searchResponse = await httpClient.GetFromJsonAsync<List<ItemDto>>($"/api/search/SearchPurchase/{SearchValue}");
+        var searchResponse = await httpClient.GetFromJsonAsync<SearchPurchaseResponse>($"/api/search/SearchPurchase/{PurchaseSearchValue}");
 
         if (searchResponse == null)
         {
@@ -148,14 +167,14 @@
         }
         else
         {
-            items = searchResponse;
-            if(searchResponse.Count == 0)
+            if(searchResponse.IsSuccess)
             {
-                Snackbar.Add("Nie znaleziono zakupu po podanym numerze.", Severity.Warning);
+                items = searchResponse.Items;
+                Snackbar.Add($"Pomyślnie wyszukano zakup.", Severity.Success);
             }
             else
-            {   
-                Snackbar.Add($"Pomyślnie wyszukano zakup.", Severity.Success);
+            {
+                Snackbar.Add($"{searchResponse.Message}", Severity.Error);
             }
         }
     }
@@ -174,9 +193,10 @@
             var request = items.Where(i => i.Id == data.ID).Select(i => new AddItemToBucketRequest
                 {
                     ItemId = i.Id,
-                    TypeId = i.Id,
+                    TypeId = i.TypeDto.Id,
                     Price = i.Price,
-                    EmployeeId = EmployeeID
+                    EmployeeId = EmployeeID,
+                    ActionCounter = 1
                 }).First();
 
             var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/return/AddToReturnBucket", request);
@@ -195,7 +215,9 @@
                             if(priceResponse.IsSuccess)
                             {
                                 PriceAll = priceResponse.Price;
-                                returnService.Add(items.Where(i => i.Id == data.ID).First());
+                                var item = items.Where(i => i.Id == request.ItemId && i.TypeDto.Id == request.TypeId).First();
+                                item.ActionCounter = 1;
+                                returnService.Add(item);
                                 Snackbar.Add($"Pomyślnie dodano {data.Title} do zwrotu.", Severity.Success);
                             }
                             else
@@ -215,12 +237,12 @@
                 }
                 else
                 {
-                    Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                    Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zwrotu. Skontaktuj się z administratorem.", Severity.Error);
                 }
             }
             else
             {
-                Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zwrotu. Skontaktuj się z administratorem.", Severity.Error);
             }
 
             if (data.ChangeTab)
@@ -244,7 +266,12 @@
 
             if (data.Remove)
             {
-                var response = await httpClient.PostAsync($"/api/return/RemoveItemFromBucket/{data.ID}", null);
+                var request = new RemoveFromBucketRequest()
+                    {
+                        ItemId = data.ID,
+                        TypeId = data.TypeID
+                    };
+                var response = await httpClient.PostAsJsonAsync<RemoveFromBucketRequest>($"/api/return/RemoveItemFromBucket", request);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -254,7 +281,7 @@
                     {
                         if (responseValue.IsSuccess)
                         {
-                            var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/return/PriceOfAllInBucket");
+                            var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/return/PriceOfAllInReturnBucket");
 
                             if (priceResponse != null)
                             {
@@ -262,7 +289,7 @@
                                 {
                                     PriceAll = priceResponse.Price;
                                     returnService.Remove(data.ID, data.TypeID);
-                                    Snackbar.Add($"Pomyślnie usunięto {title} z zakupu.", Severity.Success);
+                                    Snackbar.Add($"Pomyślnie usunięto {title} ze zwrotu.", Severity.Success);
                                 }
                                 else
                                 {
@@ -282,13 +309,13 @@
                     }
                     else
                     {
-                        Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                        Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} ze zwrotu. Skontaktuj się z administratorem.", Severity.Error);
                     }
 
                 }
                 else
                 {
-                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} z zakupu. Skontaktuj się z administratorem.", Severity.Error);
+                    Snackbar.Add($"Wystąpił błąd przy usuwaniu {data.Title} ze zwrotu. Skontaktuj się z administratorem.", Severity.Error);
                 }
             }
         }
@@ -316,21 +343,46 @@
         }
     }
 
-    async Task AcceptBuy()
+    async Task AcceptReturn()
     {
-        var response = await httpClient.GetFromJsonAsync<DefaultResponse>("/api/return/AcceptReturnBucket");
+        var request = new AcceptReturnRequest()
+            {
+                PurchaseID = PurchaseSearchValue
+            };
+        var response = await httpClient.PostAsJsonAsync<AcceptReturnRequest>($"/api/return/AcceptReturnBucket", request);
         if (response != null)
         {
-            if (response.IsSuccess)
+            if(response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Pomyślnie dokonano zwrotu.", Severity.Success);
-                returnService.Clear();
-                PriceAll = 0;
+                var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+                if(responseData != null)
+                {
+                    if (responseData.IsSuccess)
+                    {
+                        Snackbar.Add("Pomyślnie dokonano zwrotu.", Severity.Success);
+                        returnService.Clear();
+                        PriceAll = 0;
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{responseData.Message}", Severity.Error);
+                    }
+                }
+                else
+                {
+                    Snackbar.Add($"Wystąpił błąd przy zatwierdzaniu koszyka zwrotu. Skontaktuj się z administratorem.", Severity.Error);
+                }
+
             }
             else
             {
-                Snackbar.Add($"{response.Message}", Severity.Error);
+                Snackbar.Add($"Wystąpił błąd przy zatwierdzaniu koszyka zwrotu. Skontaktuj się z administratorem.", Severity.Error);
             }
+
+        }
+        else
+        {
+            Snackbar.Add($"Wystąpił błąd przy zatwierdzaniu koszyka zwrotu. Skontaktuj się z administratorem.", Severity.Error);
         }
     }
 
@@ -380,7 +432,9 @@
         var request = new ModifyPriceAndCountOfItemInBucketRequest
             {
                 ItemId = ((ItemDto)element).Id,
-                Price = ((ItemDto)element).Price
+                Price = ((ItemDto)element).Price,
+                ActionCounter = ((ItemDto)element).ActionCounter,
+                TypeId = ((ItemDto)element).TypeDto.Id
             };
         var response = await httpClient.PostAsJsonAsync<ModifyPriceAndCountOfItemInBucketRequest>("/api/return/ModifyPriceOfItem", request);
         if (response.IsSuccessStatusCode)
@@ -390,7 +444,31 @@
             {
                 if (responseData.IsSuccess)
                 {
-                    Snackbar.Add($"Pomyślnie zmieniono cenę przedmiotu: {((ItemDto)element).Title}, na: {((ItemDto)element).Price} zł");
+
+                    var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/return/PriceOfAllInReturnBucket");
+                    if(priceResponse != null)
+                    {
+                        if(priceResponse.IsSuccess)
+                        {
+                            var item = returnService.GetItemDtos().Where(i => i.Id == request.ItemId && i.TypeDto.Id == request.TypeId).First();
+                            item.ActionCounter = request.ActionCounter;
+                            item.Price = request.Price;
+                            PriceAll = priceResponse.Price;
+                            await InvokeAsync(StateHasChanged);
+                            Snackbar.Add($"Pomyślnie zmieniono cenę przedmiotu: {((ItemDto)element).Title}, na: {String.Format("{0:F2}", ((ItemDto)element).Price)} zł oraz ilość: {((ItemDto)element).ActionCounter}");
+                        }
+                        else
+                        {
+                            Snackbar.Add($"{responseData.Message}", Severity.Error);
+                            ResetItemToOriginalValues(element);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{responseData.Message}", Severity.Error);
+                        ResetItemToOriginalValues(element);
+                    }
+
                 }
                 else
                 {
