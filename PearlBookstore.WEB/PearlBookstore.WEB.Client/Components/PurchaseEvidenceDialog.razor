@@ -1,8 +1,16 @@
 ﻿<MudDialog>
     <DialogContent>
-        Numer dowodu zakupu: @Evidence
-        Data zakupu: @Date
-        Łączna cena zakupu:@String.Format("{0:F2}", @Price)zł
+        <MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Numer dowodu zakupu: </MudText><MudText>@Evidence</MudText>
+            </MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Data zakupu: </MudText><MudText>@Date</MudText>
+            </MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Łączna cena zakupu: </MudText><MudText>@String.Format("{0:F2}", @Price) zł</MudText>
+            </MudStack>
+        </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Ok" ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled">Ok</MudButton>

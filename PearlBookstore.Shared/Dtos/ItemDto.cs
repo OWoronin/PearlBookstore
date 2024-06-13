@@ -11,6 +11,8 @@
 
         public int ActionCounter { get; set; }
 
+        public int ReturnCounter { get; set; }
+
         public AuthorDto AuthorDto { get; set; }
 
         public List<GenreDto> GenresDtos { get; set; }

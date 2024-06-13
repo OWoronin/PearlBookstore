@@ -175,6 +175,7 @@ namespace PearlBookstore.API.Controllers
                     await transaction.RollbackAsync();
                     return await Task.FromResult(response);
                 }
+
                 itemType.Counter -= bucket.Items[i].ActionCounter;
 
                 var itemPurchase = new ItemPurchase

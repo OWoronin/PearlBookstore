@@ -192,11 +192,11 @@ namespace PearlBookstore.API.Controllers
                     await transaction.RollbackAsync();
                     return await Task.FromResult(response);
                 }
+
                 itemType.Counter += bucket.Items[i].ActionCounter;
 
                 var returnItem = new ItemReturn
                 {
-                    Id = bucket.Items[i].ItemId,
                     Counter = bucket.Items[i].ActionCounter,
                     Price = bucket.Items[i].Price,
                     Return = returnObj,

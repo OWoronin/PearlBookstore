@@ -474,6 +474,8 @@
                 Snackbar.Add("Pomyślnie dokonano zakupu.", Severity.Success);
                 buyService.Clear();
                 PriceAll = 0;
+                items.Clear();
+                SearchValue = string.Empty;
                 var parameters = new DialogParameters<PurchaseEvidenceDialog> { { x => x.Evidence, response.Evidence }, { x=>x.Date, response.Date} , { x=>x.Price, response.Price} };
                 var dialog = await dialogService.ShowAsync<PurchaseEvidenceDialog>("Paragon", parameters, new DialogOptions
                     {

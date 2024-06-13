@@ -230,6 +230,15 @@ namespace PearlBookstore.API.Controllers
 
                 var price = await context.ItemsTypes.Where(x => x.TypeId == item.TypeId && x.ItemId == item.ItemId).Select(x => x.Price).FirstAsync();
 
+                int counter = item.Counter;
+
+                var itemInReturn = context.ItemReturns.Where(x => x.Return.Purchase.PurchaseID == phrase && x.ItemId == item.ItemId && x.TypeId == item.TypeId);
+
+                foreach (var i in itemInReturn)
+                {
+                    counter -= i.Counter;
+                }
+
                 var itemDto = new ItemDto()
                 {
                     Id = item.Item.Id,
@@ -249,7 +258,8 @@ namespace PearlBookstore.API.Controllers
                     {
                         Id = item.Type.Id,
                         Name = item.Type.Name,
-                    }
+                    },
+                    ReturnCounter = counter
                 };
                 items.Add(itemDto);
             }
