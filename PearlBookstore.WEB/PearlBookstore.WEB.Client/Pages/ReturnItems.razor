@@ -32,12 +32,12 @@
                         <col />
                     </ColGroup>
                     <HeaderContent>
-                        <MudTh>Tytuł</MudTh>
-                        <MudTh>Autor</MudTh>
-                        <MudTh>Typ</MudTh>
-                        <MudTh>Cena</MudTh>
-                        <MudTh>Ilość w zakupie</MudTh>
-                        <MudTh>Dodaj do zwrotu</MudTh>
+                        <MudTh Style="font-weight:bold;">Tytuł</MudTh>
+                        <MudTh Style="font-weight:bold;">Autor</MudTh>
+                        <MudTh Style="font-weight:bold;">Typ</MudTh>
+                        <MudTh Style="font-weight:bold;">Cena</MudTh>
+                        <MudTh Style="font-weight:bold;">Ilość w zakupie</MudTh>
+                        <MudTh Style="font-weight:bold;">Dodaj do zwrotu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -49,6 +49,9 @@
                             <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToReturn(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id}, context.ReturnCounter)">Dodaj</MudButton>
                         </MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager HideRowsPerPage="true" />
+                    </PagerContent>
                 </MudTable>
             </MudItem>
             <MudItem xs="10">
@@ -75,12 +78,12 @@
                         <col />
                     </ColGroup>
                     <HeaderContent>
-                        <MudTh>Tytuł</MudTh>
-                        <MudTh>Autor</MudTh>
-                        <MudTh>Typ</MudTh>
-                        <MudTh>Cena</MudTh>
-                        <MudTh>Ilość w zwrocie</MudTh>
-                        <MudTh>Usuń ze zwrotu</MudTh>
+                        <MudTh Style="font-weight:bold;">Tytuł</MudTh>
+                        <MudTh Style="font-weight:bold;">Autor</MudTh>
+                        <MudTh Style="font-weight:bold;">Typ</MudTh>
+                        <MudTh Style="font-weight:bold;">Cena</MudTh>
+                        <MudTh Style="font-weight:bold;">Ilość w zwrocie</MudTh>
+                        <MudTh Style="font-weight:bold;">Usuń ze zwrotu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -131,7 +134,7 @@
     MudTabPanel searchTab;
     MudTabPanel summaryTab;
     private int EmployeeID;
-    private List<ItemDto> items;
+    private List<ItemDto> items = [];
     private HttpClient httpClient;
 
     protected override void OnInitialized()

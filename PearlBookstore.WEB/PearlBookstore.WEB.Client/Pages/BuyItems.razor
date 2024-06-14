@@ -65,7 +65,7 @@
             </MudItem>
             @*////////////////////////////////////////////////////////////////////////////////////////////////////*@
             <MudItem xs="10">
-                <MudTable Items="@items" Bordered="true" SortLabel="SortBy" Height="50vh" FixedHeader="true">
+                <MudTable Items="@items" Bordered="true" SortLabel="SortBy" Height="45vh" FixedHeader="true">
                     <ColGroup>
                         <col style="width:20%"/>
                         <col style="width:20%"/>
@@ -74,11 +74,11 @@
                         <col style="width:20%"/>
                     </ColGroup>
                     <HeaderContent>
-                        <MudTh>Tytuł</MudTh>
-                        <MudTh>Autor</MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<ItemDto,object>(x=>x.TypeDto.Id)">Typ</MudTableSortLabel></MudTh>
-                        <MudTh>Cena</MudTh>
-                        <MudTh>Dodaj do zakup</MudTh>
+                        <MudTh Style="font-weight:bold;">Tytuł</MudTh>
+                        <MudTh Style="font-weight:bold;">Autor</MudTh>
+                        <MudTh Style="font-weight:bold;"><MudTableSortLabel SortBy="new Func<ItemDto,object>(x=>x.TypeDto.Id)">Typ</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold;">Cena</MudTh>
+                        <MudTh Style="font-weight:bold;">Dodaj do zakup</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -86,7 +86,7 @@
                         <MudTd DataLabel="Typ">@context.TypeDto.Name</MudTd>
                         <MudTd DataLabel="Cena">@String.Format("{0:F2}", context.Price) zł</MudTd>
                         <MudTd DataLabel="Dodaj do zakup" Style="display:flex;justify-content:center;">
-                            <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id})"  Disabled="context.Counter==0">
+                            <MudButton ButtonType="ButtonType.Button" Color="(context.Counter != 0? Color.Success: Color.Primary)" Variant="Variant.Filled" OnClick="() => AddToPurchase(new DialogModel(){ID = context.Id, Title = context.Title, TypeName = context.TypeDto.Name, TypeID = context.TypeDto.Id}, context.Counter == 0)">
                                 @if (context.Counter == 0)
                                 {
                                     @("Zamów")
@@ -98,6 +98,9 @@
                             </MudButton>
                         </MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager HideRowsPerPage="true" />
+                    </PagerContent>
                 </MudTable>
             </MudItem>
             <MudItem xs="10">
@@ -111,7 +114,7 @@
     @*------------------------------------------------------------------------------------------------------------*@
     <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
         <MudGrid>
-            <MudItem xs="12">
+            <MudItem xs="10">
                 <MudTable Items="@buyService.GetItemDtos()" Bordered="true" Height="60vh" FixedHeader="true" CommitEditTooltip="Zmień ilość" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
                           RowEditCommit="ItemHasBeenCommitted" CanCancelEdit="true" EditTrigger="TableEditTrigger.EditButton" CancelEditTooltip="Anuluj">
                     <ColGroup>
@@ -124,12 +127,12 @@
                         <col style="width:14%" />
                     </ColGroup>
                     <HeaderContent>
-                        <MudTh>Tytuł</MudTh>
-                        <MudTh>Autor</MudTh>
-                        <MudTh><MudTableSortLabel SortBy="new Func<ItemDto,object>(x=>x.TypeDto.Id)">Typ</MudTableSortLabel></MudTh>
-                        <MudTh>Cena</MudTh>
-                        <MudTh>Ilość z zakupie</MudTh>
-                        <MudTh>Usuń z zakupu</MudTh>
+                        <MudTh Style="font-weight:bold;">Tytuł</MudTh>
+                        <MudTh Style="font-weight:bold;">Autor</MudTh>
+                        <MudTh Style="font-weight:bold;"><MudTableSortLabel SortBy="new Func<ItemDto,object>(x=>x.TypeDto.Id)">Typ</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold;">Cena</MudTh>
+                        <MudTh Style="font-weight:bold;">Ilość z zakupie</MudTh>
+                        <MudTh Style="font-weight:bold;">Usuń z zakupu</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -152,6 +155,12 @@
                         <MudTd DataLabel="Usuń z zakupu"><MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined">Usuń</MudButton></MudTd>
                     </RowEditingTemplate>
                 </MudTable>
+            </MudItem>
+            <MudItem xs="2">
+                <MudSelect Label="Dokument zakupu" T="int" @bind-Value="@PurchaseType" Placeholder="Dokument zapłaty" Clearable="true" Strict="true">
+                    <MudSelectItem Value="1">Paragon</MudSelectItem>
+                    <MudSelectItem Value="2">Faktura</MudSelectItem>
+                </MudSelect>
             </MudItem>
             <MudItem xs="9">
 
@@ -187,8 +196,9 @@
     private HttpClient httpClient;
     private List<GenreDto> genres;
     private List<AuthorDto> authors;
-    private List<ItemDto> items;
+    private List<ItemDto> items = [];
     private int EmployeeID;
+    public int PurchaseType { get; set; }
 
     protected override void OnInitialized()
     {
@@ -298,78 +308,86 @@
         }
     }
 
-    async Task AddToPurchase(DialogModel model)
+    async Task AddToPurchase(DialogModel model, bool order)
     {
-        var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
-        var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zakupu", parameters);
-
-        var result = await dialog.Result;
-
-        if (!result.Cancelled)
+        if(order)
         {
-            var data = (AddDialogReturnModel)result.Data;
+            navigationManager.NavigateTo($"/order/{model.ID}");
+        }
+        else
+        {
+            var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
+            var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zakupu", parameters);
 
-            var request = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).Select(i => new AddItemToBucketRequest
-                {
-                    ItemId = i.Id,
-                    TypeId = i.TypeDto.Id,
-                    Price = i.Price,
-                    EmployeeId = EmployeeID,
-                    ActionCounter = 1
-                }).First();
+            var result = await dialog.Result;
 
-            var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/purchase/AddItemToBucket", request);
-
-            if(response.IsSuccessStatusCode)
+            if (!result.Cancelled)
             {
-                var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
-                if (responseData != null)
-                {
-                    if (responseData.IsSuccess)
-                    {
-                        var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/purchase/PriceOfAllInBucket");
+                var data = (AddDialogReturnModel)result.Data;
 
-                        if(priceResponse != null)
+                var request = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).Select(i => new AddItemToBucketRequest
+                    {
+                        ItemId = i.Id,
+                        TypeId = i.TypeDto.Id,
+                        Price = i.Price,
+                        EmployeeId = EmployeeID,
+                        ActionCounter = 1
+                    }).First();
+
+                var response = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/purchase/AddItemToBucket", request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseData = await response.Content.ReadFromJsonAsync<DefaultResponse>();
+                    if (responseData != null)
+                    {
+                        if (responseData.IsSuccess)
                         {
-                            if(priceResponse.IsSuccess)
+                            var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/purchase/PriceOfAllInBucket");
+
+                            if (priceResponse != null)
                             {
-                                PriceAll = priceResponse.Price;
-                                var itemToAdd = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).First();
-                                itemToAdd.ActionCounter = 1;
-                                buyService.Add(itemToAdd);
-                                Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                                if (priceResponse.IsSuccess)
+                                {
+                                    PriceAll = priceResponse.Price;
+                                    var itemToAdd = items.Where(i => i.Id == data.ID && i.TypeDto.Id == data.TypeID).First();
+                                    itemToAdd.ActionCounter = 1;
+                                    buyService.Add(itemToAdd);
+                                    Snackbar.Add($"Pomyślnie dodano {data.Title} do zakupu.", Severity.Success);
+                                }
+                                else
+                                {
+                                    Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                                }
                             }
                             else
                             {
-                                Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                                Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
                             }
                         }
                         else
                         {
-                            Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                            Snackbar.Add(responseData.Message, Severity.Error);
                         }
                     }
                     else
                     {
-                        Snackbar.Add(responseData.Message, Severity.Error);
+                        Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
                     }
+
                 }
                 else
                 {
                     Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
                 }
 
-            }
-            else
-            {
-                Snackbar.Add($"Wystąpił błąd przy dodawaniu {data.Title} do zakupu. Skontaktuj się z administratorem.", Severity.Error);
-            }
-
-            if (data.ChangeTab)
-            {
-                ChangeTab(summaryTab);
+                if (data.ChangeTab)
+                {
+                    ChangeTab(summaryTab);
+                }
             }
         }
+       
     }
 
     async Task RemoveFromPurchase(DialogModel model)
@@ -466,32 +484,49 @@
 
     async Task AcceptBuy()
     {
-        var response = await httpClient.GetFromJsonAsync<AcceptBuyResponse>("/api/purchase/Accept");
-        if(response != null)
+        if(PurchaseType == 0)
         {
-            if(response.IsSuccess)
-            {
-                Snackbar.Add("Pomyślnie dokonano zakupu.", Severity.Success);
-                buyService.Clear();
-                PriceAll = 0;
-                items.Clear();
-                SearchValue = string.Empty;
-                var parameters = new DialogParameters<PurchaseEvidenceDialog> { { x => x.Evidence, response.Evidence }, { x=>x.Date, response.Date} , { x=>x.Price, response.Price} };
-                var dialog = await dialogService.ShowAsync<PurchaseEvidenceDialog>("Paragon", parameters, new DialogOptions
-                    {
-                        CloseButton = true,
-                        Position = DialogPosition.Center
-                    });
-            }
-            else
-            {
-                Snackbar.Add($"{response.Message}", Severity.Error);
-            }
+            Snackbar.Add("Typ dokumentu zapłaty jest wymagany", Severity.Error);
         }
         else
         {
-            Snackbar.Add("Nie udało się zaakceptować zakupu. Skontatkuj się z administratorem.", Severity.Error);
+            var response = await httpClient.GetFromJsonAsync<AcceptBuyResponse>("/api/purchase/Accept");
+            if (response != null)
+            {
+                if (response.IsSuccess)
+                {
+                    Snackbar.Add("Pomyślnie dokonano zakupu.", Severity.Success);
+                    buyService.Clear();
+                    PriceAll = 0;
+                    items.Clear();
+                    SearchValue = string.Empty;
+                    var parameters = new DialogParameters<PurchaseEvidenceDialog> { { x => x.Evidence, response.Evidence }, { x => x.Date, response.Date }, { x => x.Price, response.Price } };
+                    string typeOfPurchase = "Błąd";
+                    if(PurchaseType == 1)
+                    {
+                        typeOfPurchase = "Paragon";
+                    }
+                    else
+                    {
+                        typeOfPurchase = "Faktura";
+                    }
+                    var dialog = await dialogService.ShowAsync<PurchaseEvidenceDialog>(typeOfPurchase, parameters, new DialogOptions
+                        {
+                            CloseButton = true,
+                            Position = DialogPosition.Center
+                        });
+                }
+                else
+                {
+                    Snackbar.Add($"{response.Message}", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Nie udało się zaakceptować zakupu. Skontatkuj się z administratorem.", Severity.Error);
+            }
         }
+        
     }
 
     void ChangeTab(MudTabPanel panel)

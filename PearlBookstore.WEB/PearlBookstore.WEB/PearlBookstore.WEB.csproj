@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\Resources\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\PearlBookstore.Shared\PearlBookstore.Shared.csproj" />
     <ProjectReference Include="..\PearlBookstore.WEB.Client\PearlBookstore.WEB.Client.csproj" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />

@@ -1,4 +1,5 @@
 ﻿@page "/order"
+@page "/order/{id:int}"
 @rendermode InteractiveAuto
 @inject IHttpClientFactory clientFactory
 @inject IDialogService dialogService
@@ -7,8 +8,8 @@
 @inject NavigationManager navigationManager
 @inject CurrentUserService currentUserService
 
-<PageTitle>Zwróć publikacje</PageTitle>
-<MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zwróć publikacje</MudText>
+<PageTitle>Zamów publikacje</PageTitle>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zamów publikacje</MudText>
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-12" Centered="true" @ref="tabs">
     <MudTabPanel Text="Podaj identyfikator zakupu" @ref="searchTab">
         <MudGrid>
@@ -154,6 +155,7 @@
     public string ClientPhone { get; set; }
     public IMask emailMask = RegexMask.Email();
 
+    [Parameter] public int id { get; set; }
 
     async Task AddToOrder(DialogModel model)
     {
