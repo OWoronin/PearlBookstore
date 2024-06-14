@@ -5,7 +5,7 @@
         public static bool IsAtLeast14DaysEarlierThanToday(this DateOnly earlierDate)
         {
             DateOnly today = DateOnly.FromDateTime(DateTime.Today);
-            return (today.ToDateTime(TimeOnly.MinValue) - earlierDate.ToDateTime(TimeOnly.MinValue)).Days > 14;
+            return (today.ToDateTime(TimeOnly.MinValue) - earlierDate.ToDateTime(TimeOnly.MinValue)).Days >= 14;
         }
     }
 }
