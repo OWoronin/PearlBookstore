@@ -1,6 +1,6 @@
 ﻿namespace PearlBookstore.Shared.RequestsResponses.Responses
 {
-    public class AcceptBuyResponse
+    public class AcceptResponse
     {
         public bool IsSuccess { get; set; }
 

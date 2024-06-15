@@ -42,7 +42,8 @@ namespace PearlBookstore.API.DB
                 );
 
             modelBuilder.Entity<User>().HasData(
-                new User() { Id = 1, Name = "Jakub", Surname = "Juszczak", Login = "JJ", Password = "1234", RoleId = 2 }
+                new User() { Id = 1, Name = "Kierownik", Surname = "Kierownik", Login = "KK", Password = "1234", RoleId = 2 },
+                new User() { Id = 2, Name = "Sprzedawca", Surname = "Sprzedawca", Login = "SS", Password = "1234", RoleId = 1 }
                 );
 
             modelBuilder.Entity<Genre>().HasData(

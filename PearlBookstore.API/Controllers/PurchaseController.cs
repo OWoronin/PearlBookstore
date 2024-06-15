@@ -121,10 +121,10 @@ namespace PearlBookstore.API.Controllers
         }
 
         [HttpGet("Accept")]
-        public async Task<AcceptBuyResponse> Accept()
+        public async Task<AcceptResponse> Accept()
         {
             string prefix = "Nie udało się zaakceptować zakupu.";
-            AcceptBuyResponse response = new();
+            AcceptResponse response = new();
             if (bucket.Items.Count == 0)
             {
                 response.IsSuccess = false;
@@ -171,7 +171,7 @@ namespace PearlBookstore.API.Controllers
                 if (itemType == null)
                 {
                     response.IsSuccess = false;
-                    response.Message = "Publikacja o danym typie nie istenieje w systemie.";
+                    response.Message = "Publikacja o danym typie nie istnieje w systemie.";
                     await transaction.RollbackAsync();
                     return await Task.FromResult(response);
                 }

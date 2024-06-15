@@ -29,5 +29,7 @@ namespace PearlBookstore.API.Models
 
         public ICollection<ItemReturn> Returns { get; } = [];
 
+        public ICollection<OrderItem> Orders { get; } = [];
+
     }
 }

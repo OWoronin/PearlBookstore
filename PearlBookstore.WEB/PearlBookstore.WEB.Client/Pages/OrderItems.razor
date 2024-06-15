@@ -1,5 +1,6 @@
 ﻿@page "/order"
-@page "/order/{id:int}"
+@page "/order/{id:int}/{type:int}"
+@using System.ComponentModel.DataAnnotations
 @rendermode InteractiveAuto
 @inject IHttpClientFactory clientFactory
 @inject IDialogService dialogService
@@ -11,7 +12,7 @@
 <PageTitle>Zamów publikacje</PageTitle>
 <MudText Typo="Typo.h3" Align="Align.Center" Class="m-3">Zamów publikacje</MudText>
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-12" Centered="true" @ref="tabs">
-    <MudTabPanel Text="Podaj identyfikator zakupu" @ref="searchTab">
+    <MudTabPanel Text="Wyszukaj publikację" @ref="searchTab">
         <MudGrid>
             <MudItem xs="10">
                 <MudTextField Clearable="true" @bind-Value="@SearchValue" AutoFocus="true" Placeholder="Tytuł lub Autor" />
@@ -31,11 +32,11 @@
                         <col style="width:20%" />
                     </ColGroup>
                     <HeaderContent>
-                        <MudTh>Tytuł</MudTh>
-                        <MudTh>Autor</MudTh>
-                        <MudTh>Typ</MudTh>
-                        <MudTh>Cena</MudTh>
-                        <MudTh>Dodaj do zamówienia</MudTh>
+                        <MudTh Style="font-weight:bold;">Tytuł</MudTh>
+                        <MudTh Style="font-weight:bold;">Autor</MudTh>
+                        <MudTh Style="font-weight:bold;">Typ</MudTh>
+                        <MudTh Style="font-weight:bold;">Cena</MudTh>
+                        <MudTh Style="font-weight:bold;">Dodaj do zamówienia</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Tytuł">@context.Title</MudTd>
@@ -48,45 +49,48 @@
                     </RowTemplate>
                 </MudTable>
             </MudItem>
-            <MudItem xs="10">
+            <MudItem xs="8">
 
             </MudItem>
-            <MudItem xs="2">
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Przejdź do danych klienta</MudButton>
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+            <MudItem xs="4">
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Przejdź do danych klienta</MudButton>
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)" >Przejdź do podsumowania</MudButton>
             </MudItem>
         </MudGrid>
     </MudTabPanel>
     @*///////////////////////////////////////////////////////////////////////////////////////////////////////////////*@
-    <MudTabPanel Text="Podsumowanie" @ref="dataTab">
+    <MudTabPanel Text="Dane klienta" @ref="dataTab">
         <MudGrid>
             <MudItem xs="4">
 
             </MudItem>
             <MudItem xs="4">
-                <MudText Typo="Typo.h4" Align="Align.Center" Class="m-2">Podaj dane</MudText>
-                <MudTextField @bind-Value="@ClientName" Placeholder="Imię" Label="Imię" InputType="InputType.Text"/>
-                <MudTextField @bind-Value="@ClientSurname" Placeholder="Nazwisko" Label="Nazwisko" InputType="InputType.Text" />
-                <MudTextField @bind-Value="@ClientEmail" Placeholder="Adres email" Label="Adres email" InputType="InputType.Email" Mask="@emailMask" InputMode="InputMode.email"/>
-                <MudTextField @bind-Value="@ClientPhone" Placeholder="Numer telefonu" Label="Numer telefonu" InputType="InputType.Telephone" Mask="@(new PatternMask("000 000 000"))" InputMode="InputMode.tel"/>
+                <MudForm @ref="form" @bind-IsValid="@success">
+                    <MudText Typo="Typo.h4" Align="Align.Center" Class="m-2">Podaj dane</MudText>
+                    <MudTextField @bind-Value="ClientRequest.Name" Placeholder="Imię" Label="Imię" InputType="InputType.Text" T="string" Required="true" RequiredError="Imię klienta jest wymagane" />
+                    <MudTextField @bind-Value="@ClientRequest.Surname" Placeholder="Nazwisko" Label="Nazwisko" InputType="InputType.Text" T="string" Required="true" RequiredError="Nazwisko klienta jest wymagane" />
+                    <MudTextField @bind-Value="@ClientRequest.Email" Placeholder="Adres email" Label="Adres email" InputType="InputType.Email" InputMode="InputMode.email" T="string" Required="true" RequiredError="Adres email jest wymagany"
+                                  Validation="@(new EmailAddressAttribute() {ErrorMessage = "Adres email jest niepoprawny"})" />
+                    <MudTextField @bind-Value="@ClientRequest.Phone" Placeholder="Numer telefonu" Label="Numer telefonu" InputType="InputType.Telephone" InputMode="InputMode.tel" Validation="@(new PhoneAttribute() {ErrorMessage="Numer telefonu jest niepoprawny"})" T="string" Required="true" RequiredError="Numer telefonu jest wymagany" />
+                </MudForm>
             </MudItem>
             <MudItem xs="4">
 
             </MudItem>
             @*-----------------------------------------------------------------------------------------------------------*@
-            <MudItem xs="10">
+            <MudItem xs="8">
 
             </MudItem>
-            <MudItem xs="2">
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(searchTab)">Wróć do wyszukiwania</MudButton>
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+            <MudItem xs="4">
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(searchTab)">Wróć do wyszukiwania</MudButton>
+                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)" Disabled="@(!success)">Przejdź do podsumowania</MudButton>
             </MudItem>
         </MudGrid>
     </MudTabPanel>
     @*///////////////////////////////////////////////////////////////////////////////////////////////////////////////*@
     <MudTabPanel Text="Podsumowanie" @ref="summaryTab">
         <MudGrid>
-            <MudItem xs="12">
+            <MudItem xs="9">
                 <MudTable Items="@orderService.GetItemDtos()" Bordered="true" CommitEditTooltip="Zmień cenę" Height="55vh" FixedHeader="true">
                     <ColGroup>
                         <col style="width:20%" />
@@ -125,14 +129,25 @@
                     </EditButtonContent>
                 </MudTable>
             </MudItem>
-            <MudItem xs="9">
+
+            <MudItem xs="3">
+                <MudText Typo="Typo.h4">Dane do zamówienia</MudText>
+                <MudText><span style="font-weight:bold;">Imię:</span> @ClientRequest.Name</MudText>
+                <MudText><span style="font-weight:bold;">Nazwisko:</span> @ClientRequest.Surname</MudText>
+                <MudText><span style="font-weight:bold;">Email:</span> @ClientRequest.Email</MudText>
+                <MudText><span style="font-weight:bold;">Nr tel:</span> @ClientRequest.Phone</MudText>
+            </MudItem>
+
+            <MudItem xs="6">
 
             </MudItem>
-            <MudItem xs="3">
+            <MudItem xs="6">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Default" Variant="Variant.Filled" OnClick="()=>ChangeTab(searchTab)">Wróć do wyszukiwania</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Wróć do danych klienta</MudButton>
                     <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", @PriceAll)zł</MudText>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearOrder()">Wyczyść zwrot</MudButton>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled">Zatwierdź zakup</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearOrder()">Wyczyść zamówienie</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" Disabled="@(!success)">Zatwierdź zamówienie</MudButton>
                 </MudStack>
             </MudItem>
         </MudGrid>
@@ -145,21 +160,119 @@
     MudTabPanel dataTab;
     MudTabPanel summaryTab;
     decimal PriceAll;
-    private List<ItemDto> items;
+    private List<ItemDto> items = [];
     private int EmployeeID;
     private HttpClient httpClient;
     public string SearchValue { get; set; }
-    public string ClientName { get; set; }
-    public string ClientSurname { get; set; }
-    public string ClientEmail { get; set; }
-    public string ClientPhone { get; set; }
+    public ClientInOrderRequest ClientRequest { get; set; } = new();
     public IMask emailMask = RegexMask.Email();
+    MudForm form;
+    bool success = false;
+
+    private MudTextField<string> foo;
 
     [Parameter] public int id { get; set; }
+    [Parameter] public int type { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if(httpClient == null)
+        {
+            httpClient = clientFactory.CreateClient("API");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!(await currentUserService.IsLoggedUser()))
+            {
+                Snackbar.Add("Musisz się najpierw zalogować.", Severity.Warning);
+                navigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                var user = await currentUserService.GetCurrentUser();
+                EmployeeID = user.ID;
+                if (id > 0 && type > 0)
+                {
+                    if (httpClient == null)
+                    {
+                        httpClient = clientFactory.CreateClient("API");
+                    }
+
+                    var response = await httpClient.GetFromJsonAsync<ItemDto>($"/api/search/SearchToOrder/{id}/{type}");
+                    if (response != null)
+                    {
+                        AddItemToBucketRequest bucketRequest = new()
+                            {
+                                ActionCounter = 1,
+                                TypeId = response.TypeDto.Id,
+                                ItemId = response.Id,
+                                Price = response.Price,
+                                EmployeeId = EmployeeID
+                            };
+
+                        var addResponse = await httpClient.PostAsJsonAsync<AddItemToBucketRequest>("/api/order/AddToOrder", bucketRequest);
+                        if (addResponse.IsSuccessStatusCode)
+                        {
+                            var responseData = await addResponse.Content.ReadFromJsonAsync<DefaultResponse>();
+                            if (responseData != null)
+                            {
+                                if (responseData.IsSuccess)
+                                {
+                                    var priceResponse = await httpClient.GetFromJsonAsync<PriceOfBucketReponse>("/api/order/PriceOfAllInBucket");
+
+                                    if (priceResponse != null)
+                                    {
+                                        if (priceResponse.IsSuccess)
+                                        {
+                                            PriceAll = priceResponse.Price;
+                                            response.ActionCounter = 1;
+                                            orderService.Add(response);
+                                            Snackbar.Add($"Pomyślnie dodano {response.Title} do zamówienia.", Severity.Success);
+                                        }
+                                        else
+                                        {
+                                            Snackbar.Add($"{priceResponse.Message}", Severity.Error);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Snackbar.Add($"Wystąpił błąd przy podsumowaniu ceny koszyka. Skontaktuj się z administratorem.", Severity.Error);
+                                    }
+                                }
+                                else
+                                {
+                                    Snackbar.Add(responseData.Message, Severity.Error);
+                                }
+                            }
+                            else
+                            {
+                                Snackbar.Add($"Wystąpił błąd przy dodawaniu {response.Title} do zamówienia. Skontaktuj się z administratorem.", Severity.Error);
+                            }
+
+                        }
+                        else
+                        {
+                            Snackbar.Add($"Wystąpił błąd przy dodawaniu {response.Title} do zamówienia. Skontaktuj się z administratorem.", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add($"Nie udało się znaleźć publikacji. Skontaktuj się z administratorem.", Severity.Error);
+                    }
+
+                }
+            }
+        }
+    }
 
     async Task AddToOrder(DialogModel model)
     {
-        
+
     }
 
     async Task RemoveFromOrder(DialogModel model)
@@ -169,12 +282,13 @@
 
     async Task ClearOrder()
     {
-        
+
     }
 
     void ChangeTab(MudTabPanel panel)
     {
         tabs.ActivatePanel(panel);
     }
+
 
 }

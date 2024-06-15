@@ -66,6 +66,63 @@ namespace PearlBookstore.API.Controllers
 
         }
 
+        [HttpGet("SearchToOrder/{id}/{type}")]
+        public async Task<ItemDto> GetItemToOrdere(int id, int type)
+        {
+            var item = context.Items
+                .Include(i => i.Author)
+                .Include(i => i.Genres)
+                    .ThenInclude(it => it.Genre)
+                .Include(i => i.Types)
+                    .ThenInclude(it => it.Type)
+                .Where(item => item.Id == id)
+                 .ToList();
+
+            ItemDto itemDto = new();
+
+            foreach (var it in item)
+            {
+                foreach (var typ in it.Types)
+                {
+                    if (typ.TypeId != type)
+                    {
+                        continue;
+                    }
+                    List<GenreDto> genreDtos = [];
+                    foreach (var genre in it.Genres)
+                    {
+                        genreDtos.Add(new GenreDto() { Id = genre.Genre.Id, Name = genre.Genre.Name });
+                    }
+                    itemDto = new ItemDto()
+                    {
+                        Id = it.Id,
+                        Title = it.Title,
+                        Description = it.Description,
+                        YearPublication = it.YearPublication,
+                        Counter = typ.Counter,
+                        Price = typ.Price,
+                        AuthorDto = new AuthorDto()
+                        {
+                            Id = it.Author.Id,
+                            Name = it.Author.Name,
+                            Surname = it.Author.Surname
+                        },
+                        GenresDtos = genreDtos,
+                        TypeDto = new TypeDto()
+                        {
+                            Id = typ.Type.Id,
+                            Name = typ.Type.Name
+                        }
+                    };
+                    break;
+                }
+
+
+            }
+
+            return await Task.FromResult(itemDto);
+        }
+
         [HttpGet("SearchExtended")]
         public async Task<List<ItemDto>> SearchItemsExtended([FromHeader] string phrase, [FromHeader] int autorID, [FromHeader] int genreID, [FromHeader] decimal minPrice, [FromHeader] decimal maxPrice, [FromHeader] bool isHard, [FromHeader] bool isSoft, [FromHeader] bool isEbook, [FromHeader] bool isAudiobook)
         {

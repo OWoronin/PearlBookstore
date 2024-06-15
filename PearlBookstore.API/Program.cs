@@ -28,6 +28,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddSingleton<PurchaseBucket>();//koszyk ciagle w pamieci
 builder.Services.AddSingleton<ReturnBucket>();
+builder.Services.AddSingleton<OrderBucket>();
 builder.Services.AddSingleton<CurrentEmployee>();
 
 var app = builder.Build();
