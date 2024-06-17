@@ -1,0 +1,24 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Numer dowodu zamówienia: </MudText><MudText>@Evidence</MudText>
+            </MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Przewidywana data dostarczenia: </MudText><MudText>@Date</MudText>
+            </MudStack>
+            <MudStack Row AlignItems="AlignItems.Baseline">
+                <MudText Typo="Typo.h5">Łączna cena zamówienia: </MudText><MudText>@String.Format("{0:F2}", @Price) zł</MudText>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string Evidence { get; set; }
+    [Parameter] public DateOnly Date { get; set; }
+    [Parameter] public decimal Price { get; set; }
+
+    void Ok() => MudDialog.Close(DialogResult.Ok(true));
+}

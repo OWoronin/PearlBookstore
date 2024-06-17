@@ -167,7 +167,6 @@ namespace PearlBookstore.API.Controllers
             };
 
             context.Orders.Add(order);
-            //context.SaveChanges();
 
             for (int i = 0; i < bucket.Items.Count; i++)
             {
@@ -220,7 +219,7 @@ namespace PearlBookstore.API.Controllers
             {
                 await transaction.RollbackAsync();
                 response.IsSuccess = false;
-                response.Message = $"{prefix} Wystąpił błąd przy zatwierdzaniu zakupu. Skontaktuj się z administratorem.";
+                response.Message = $"{prefix} Wystąpił błąd przy zatwierdzaniu zamówienia. Skontaktuj się z administratorem.";
                 return await Task.FromResult(response);
             }
         }
