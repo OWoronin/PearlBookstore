@@ -93,6 +93,14 @@ namespace PearlBookstore.API.Controllers
 
         }
 
+        [HttpPost("ModifyClient")]
+        public Task UpdateClient(ClientInOrderRequest request)
+        {
+            bucket.ClientInOrder = request;
+            return Task.CompletedTask;
+
+        }
+
         [HttpPost("ModifyCount")]
         public async Task<DefaultResponse> ModifyCount(ModifyCountOfItemInBucketRequest request)
         {

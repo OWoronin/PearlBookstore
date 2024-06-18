@@ -191,7 +191,7 @@
         }
         else
         {
-            var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
+            var parameters = new DialogParameters<AddDialog> { { x => x.Model, model }, { x => x.Destination, "podsumowania" } };
             var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zwrotu", parameters);
 
             var result = await dialog.Result;

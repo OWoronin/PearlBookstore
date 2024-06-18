@@ -5,13 +5,14 @@
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" OnClick="Add" Variant="Variant.Filled">Dodaj</MudButton>
-        <MudButton Color="Color.Success" OnClick="AddAndSummary" Variant="Variant.Filled">Dodaj i przejdź do podsumowania</MudButton>
+        <MudButton Color="Color.Success" OnClick="AddAndSummary" Variant="Variant.Filled">Dodaj i przejdź do @Destination</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
     [Parameter] public DialogModel Model { get; set; }
+    [Parameter] public string Destination { get; set; }
 
     AddDialogReturnModel ReturnModel;
 

@@ -5,6 +5,6 @@ namespace PearlBookstore.API.Services
     public class OrderBucket
     {
         public List<AddItemToBucketRequest> Items { get; } = new List<AddItemToBucketRequest>();
-        public ClientInOrderRequest ClientInOrder { get; set; }
+        public ClientInOrderRequest ClientInOrder { get; set; } = new();
     }
 }

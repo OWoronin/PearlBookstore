@@ -62,8 +62,10 @@
 
             </MudItem>
             <MudItem xs="4">
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Przejdź do danych klienta</MudButton>
-                <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)" >Przejdź do podsumowania</MudButton>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Przejdź do danych klienta</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" OnClick="()=>ChangeTab(summaryTab)">Przejdź do podsumowania</MudButton>
+                </MudStack>
             </MudItem>
         </MudGrid>
     </MudTabPanel>
@@ -161,7 +163,7 @@
                     <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" OnClick="()=>ChangeTab(dataTab)">Wróć do danych klienta</MudButton>
                     <MudText Align="Align.Center">Cena wynosi: @String.Format("{0:F2}", @PriceAll)zł</MudText>
                     <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Outlined" OnClick="()=>ClearOrder()">Wyczyść zamówienie</MudButton>
-                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" Disabled="@(!success)">Zatwierdź zamówienie</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Success" Variant="Variant.Filled" Disabled="@(!success)" OnClick="AcceptOrder">Zatwierdź zamówienie</MudButton>
                 </MudStack>
             </MudItem>
         </MudGrid>
@@ -309,7 +311,7 @@
 
     async Task AddToOrder(DialogModel model)
     {
-        var parameters = new DialogParameters<AddDialog> { { x => x.Model, model } };
+        var parameters = new DialogParameters<AddDialog> { { x => x.Model, model }, { x=>x.Destination, "danych klienta"} };
         var dialog = await dialogService.ShowAsync<AddDialog>("Dodaj do zamówienia", parameters);
 
         var result = await dialog.Result;
@@ -376,7 +378,7 @@
 
             if (data.ChangeTab)
             {
-                ChangeTab(summaryTab);
+                await ChangeTab(dataTab);
             }
         }
     }
@@ -473,7 +475,7 @@
         }
     }
 
-    async Task AcceptBuy()
+    async Task AcceptOrder()
     {
         var response = await httpClient.GetFromJsonAsync<AcceptResponse>("/api/order/AcceptOrder");
         if (response != null)
@@ -501,12 +503,16 @@
         {
             Snackbar.Add("Nie udało się zaakceptować zakupu. Skontatkuj się z administratorem.", Severity.Error);
         }
-        
+
 
     }
 
-    void ChangeTab(MudTabPanel panel)
+    async Task ChangeTab(MudTabPanel panel)
     {
+        if(ClientRequest.Name != string.Empty)
+        {
+            await httpClient.PostAsJsonAsync<ClientInOrderRequest>("/api/order/ModifyClient", ClientRequest);
+        }
         tabs.ActivatePanel(panel);
     }
 
